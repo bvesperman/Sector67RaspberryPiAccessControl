@@ -1,0 +1,53 @@
+import requests
+
+import json
+import datetime
+import RFIDDataAccess
+import SectorAdminSite
+import sys
+import time 
+import datetime 
+import io 
+import select
+from time import gmtime, strftime
+import subprocess
+import os
+import MachineLogic
+import logging 
+import serial
+import sys
+print("wakeup")
+
+try: 
+   
+   #loop forever
+   logging.info("Beginning main loop")
+   print("Initializing serial device")
+   #ser = serial.Serial('/dev/ttyAMA0',2400, timeout=1.0)
+   ser = serial.Serial('/dev/ttyAMA0',2400, timeout=None)
+
+   while True:
+       # read the standard input to see if the RFID has been swiped
+       #while sys.stdin in select.select([sys.stdin],[],[],0)[0]:
+       print("Before RFID serial read")
+       localRFID = sys.stdin.readline()
+       print(localRFID)
+       
+       #print("Before RFID serial read")
+       #byte = ser.read(1)
+       #sys.stdout.write(byte)
+       #print("{:02x}".format(ord(byte)))
+
+       #bytesToRead = ser.inWaiting()
+       #if (bytesToRead > 0):
+           #print("Reading " + str(bytesToRead) + " bytes")
+           #raw_data = ser.read(bytesToRead)
+           #print(raw_data)
+           #time.sleep(0.2)
+       #print("After RFID serial read")
+       time.sleep(0.1)
+       
+
+except:
+   print("Main exception")
+   raise
