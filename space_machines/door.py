@@ -19,35 +19,35 @@ class DoorState(StateMachine):
 
   def CLOSED_UNLOCKING(self):
     self.log.debug("turn on solenoid")
-    self.log.debug("waiting up to 5 seconds")
+    self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
     while True:
       ev = yield
       if ev['event'] == "DOOR_OPENED":
         self.log.debug('Unlocked and opened')
         self.transition(self.OPEN_UNLOCKING)
-      if self.duration() > 5:
+      if self.duration() > self.unlock_timeout:
         self.log.debug('Unlocked but not opened')
         self.transition(self.CLOSED_LOCKED)
 
   def OPEN_UNLOCKING(self):
-    self.log.debug("waiting up to 0.5 seconds")
+    self.log.debug("waiting up to " + str(self.open_unlock_timeout) + " seconds")
     while True:
       ev = yield
       if ev['event'] == "DOOR_CLOSED":
         self.log.debug('Door closed')
         self.transition(self.CLOSED_LOCKED)
-      if self.duration() > 0.5 :
+      if self.duration() > self.open_unlock_timeout:
         self.transition(self.OPEN_LOCKED)
 
   def OPEN_LOCKED(self):
     self.log.debug("turn off solenoid")
-    self.log.debug("waiting up to 15 seconds")
+    self.log.debug("waiting up to " + str(self.stuck_open_timeout) + "seconds")
     while True:
       ev = yield
       if ev['event'] == "DOOR_CLOSED":
         self.log.debug('Door closed')
         self.transition(self.CLOSED_LOCKED)
-      if self.duration() > 15:
+      if self.duration() > self.stuck_open_timeout:
         self.log.debug("timeout!")
         self.transition(self.STUCK_OPEN)
 
@@ -66,15 +66,18 @@ class DoorState(StateMachine):
       if ev['event'] == "DOOR_CLOSED":
         self.log.debug('Door closed')
         self.transition(self.CLOSED_LOCKED)
-      if self.duration() > 15:
+      if self.duration() > self.stuck_open_timeout:
         self.log.debug("timeout!")
         self.transition(self.STUCK_OPEN)
 
-  def setup(self, out_queue, name, solenoid_pin):
+  def setup(self, out_queue, name, solenoid_pin, unlock_timeout, open_unlock_timeout, stuck_open_timeout):
     self.log = logging.getLogger("DoorState")
     self.out_queue = out_queue
     self.name = name
     self.solenoid_pin=int(solenoid_pin)
+    self.unlock_timeout = int(unlock_timeout)
+    self.open_unlock_timeout = int(open_unlock_timeout)
+    self.stuck_open_timeout = int(stuck_open_timeout)
 
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(self.solenoid_pin, GPIO.OUT)
