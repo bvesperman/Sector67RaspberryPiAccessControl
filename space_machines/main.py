@@ -61,5 +61,5 @@ while True:
     out_queue.task_done()
   except Queue.Empty:
     # keep handling events
-    logger.debug("no event seen")
-
+    #logger.debug("no event seen")
+    pass
