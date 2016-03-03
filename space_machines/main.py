@@ -2,10 +2,56 @@ import ConfigParser
 import logging
 import logging.config
 import Queue
+import threading
+import time
+import datetime
+
+from Tkinter import *
+
+
+class MessageThread:
+  """ Since the tkinter thread wants to be the main loop, create a thread
+    to handle messages
+  """
+
+  def config_gui(self, root):
+    self.root = root
+    logFrame = LabelFrame(root, text="events", padx=5, pady=5)
+    logFrame.pack(fill=X)
+    scrollb  = Scrollbar(logFrame, orient=VERTICAL)
+    self.events = Text(logFrame, wrap=WORD)
+    self.events.pack(fill=X)
+    self.events.config(yscrollcommand = scrollb.set)
+    self.events.pack(side=LEFT, fill=BOTH, expand=True)
+    scrollb.config(command = self.events.yview) 
+    scrollb.pack(side=RIGHT, fill=Y)
+
+  def start_thread(self):
+    self.thread = threading.Thread(target=self.do_work)
+    self.thread.setDaemon(True)
+    self.thread.start()
+
+  def do_work(self):
+    # loop and forward events to all machines
+    while True:
+      try:
+        message = out_queue.get(True, 0.1)
+        logger.debug("got event:" + str(message))
+        self.events.insert('end', str(datetime.datetime.now()).split('.')[0] + " event: " + str(message)  + "\n")
+        for machine in machines:
+          logger.debug("sending " + str(message) + " to " + str(machine))
+          machine.send_message(message)
+        out_queue.task_done()
+      except Queue.Empty:
+        # keep handling events
+        #logger.debug("no event seen")
+        pass
 
 # Read the configuration file
 config = ConfigParser.RawConfigParser()
 config.read('machine.conf')
+#TODO: parse this from a main config section
+show_gui = True
 
 # Initialize logging
 logging.config.fileConfig('logging.conf')
@@ -42,6 +88,19 @@ for section in config.sections():
 
 logger.info("machine setup completed")
 
+broker = MessageThread()
+
+if show_gui:
+  logger.info("starting gui configuration")
+  root = Tk()
+  for machine in machines:
+    logger.info("configuring gui " + str(machine))
+    machine.config_gui(root)
+  broker.config_gui(root)
+
+broker.start_thread()
+logger.info("broker started completed")
+
 # everything is configured, start each individual machine
 logger.info("starting machines")
 for machine in machines:
@@ -50,16 +109,9 @@ for machine in machines:
 
 logger.info("machine start completed")
 
-# loop and forward events to all machines
-while True:
-  try:
-    message = out_queue.get(True, 0.1)
-    logger.debug("got event:" + str(message))
-    for machine in machines:
-      logger.debug("sending " + str(message) + " to " + str(machine))
-      machine.send_message(message)
-    out_queue.task_done()
-  except Queue.Empty:
-    # keep handling events
-    #logger.debug("no event seen")
-    pass
+if show_gui: 
+  root.mainloop()
+  root.destroy() 
+else:
+  while True:
+    time.sleep(60)

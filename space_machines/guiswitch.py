@@ -7,64 +7,51 @@ from Tkinter import *
 
 from pystates import StateMachine
 
-class MockSwitch(StateMachine):
+class GuiSwitch(StateMachine):
 
   def ON(self):
-    self.v.set("ON")
     self.logger.debug(self.name + " switch is on ")
     while True:
       ev = yield
-      if self.duration() > 5:
+      state = self.state.get()
+      if state == 0:
         self.logger.debug("generating message: " + self.off_message)
         self.generate_message({"event": self.off_message})
         self.transition(self.OFF)
 
   def OFF(self):
-    self.v.set("OFF")
     self.logger.debug(self.name + " switch is off")
     while True:
       ev = yield
-      if self.duration() > 5:
+      state = self.state.get()
+      if state == 1:
         self.logger.debug("generating message: " + self.on_message)
         self.generate_message({"event": self.on_message})
         self.transition(self.ON)
 
   def setup(self, out_queue, name, on_message, off_message):
-    self.logger = logging.getLogger("MockSwitch")
+    self.logger = logging.getLogger("GuiSwitch")
     self.out_queue = out_queue
     self.name = name
     self.on_message = on_message
     self.off_message = off_message
+
 
   """ Perform initialization here, detect the current state and send that
       to the super class start.
   """
   def start(self):
     #TODO: actually detect the starting state here
-    super(MockSwitch, self).start(self.OFF)
+    self.logger.debug("initial state: " + self.off_message)
+    self.generate_message({"event": self.off_message})
+    super(GuiSwitch, self).start(self.OFF)
 
   def config_gui(self, root):
     # Set up the GUI part
+    self.state = IntVar()
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
-    self.v = StringVar()
-    self.v.set("STATE")
-    w = Label(frame, textvariable=self.v)
-    w.pack(side=LEFT)
+    c = Checkbutton(frame, text="Expand", variable=self.state)
+    c.pack(side=LEFT)
 
 
-def main():
-  out_queue = Queue.Queue()
-  logging.basicConfig(level=logging.DEBUG)
-  switch_name = "LIGHT"
-
-  switch_1 = MockSwitch(name=switch_name)
-  switch_1.setup(out_queue, name="LIGHT", gpio_pin=24, on_message="DOOR_OPENEND", off_message="DOOR_CLOSED")
-  switch_1.start()
-
-  logging.info('turn off the switch')
-  switch_1.send_message({"event": switch_name + "_TURNED_OFF"})
-  time.sleep(5)
-
-if __name__=='__main__':
-  main()

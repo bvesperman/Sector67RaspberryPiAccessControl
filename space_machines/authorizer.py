@@ -3,6 +3,8 @@ import time
 import Queue
 import threading
 
+from Tkinter import *
+
 from pystates import StateMachine
 
 class NaiveAuthorizer(StateMachine):
@@ -32,6 +34,15 @@ class NaiveAuthorizer(StateMachine):
 
   def start(self):
     super(NaiveAuthorizer, self).start(self.WAITING)
+
+  def config_gui(self, root):
+    # Set up the GUI part
+    frame = LabelFrame(root, text=self.name, padx=5, pady=5)
+    frame.pack(fill=X)
+    self.v = StringVar()
+    self.v.set("AUTHORIZER")
+    w = Label(frame, textvariable=self.v)
+    w.pack(side=LEFT)
 
 def main():
   out_queue = Queue.Queue()
