@@ -37,7 +37,9 @@ class MessageThread:
       try:
         message = out_queue.get(True, 0.1)
         logger.debug("got event:" + str(message))
-        self.events.insert('end', str(datetime.datetime.now()).split('.')[0] + " event: " + str(message)  + "\n")
+        #self.events.insert('end', str(datetime.datetime.now()).split('.')[0] + " event: " + str(message)  + "\n")
+        self.events.insert('end', str(datetime.datetime.now()) + " event: " + str(message)  + "\n")
+        self.events.see(END)
         for machine in machines:
           logger.debug("sending " + str(message) + " to " + str(machine))
           machine.send_message(message)

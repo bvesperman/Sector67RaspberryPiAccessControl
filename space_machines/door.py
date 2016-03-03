@@ -9,6 +9,7 @@ from pystates import StateMachine
 
 class DoorState(StateMachine):
   def CLOSED_LOCKED(self):
+    self.generate_message({"event": self.name + "_CLOSED_LOCKED"})
     self.v.set("CLOSED_LOCKED")
     self.log.debug("turn off solenoid")
     while True:
@@ -19,6 +20,7 @@ class DoorState(StateMachine):
         self.transition(self.FORCED_OPEN)
 
   def CLOSED_UNLOCKING(self):
+    self.generate_message({"event": self.name + "_CLOSED_UNLOCKING"})
     self.v.set("CLOSED_UNLOCKING")
     self.log.debug("turn on solenoid")
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
@@ -32,6 +34,7 @@ class DoorState(StateMachine):
         self.transition(self.CLOSED_LOCKED)
 
   def OPEN_UNLOCKING(self):
+    self.generate_message({"event": self.name + "_OPEN_UNLOCKING"})
     self.v.set("OPEN_UNLOCKING")
     self.log.debug("waiting up to " + str(self.open_unlock_timeout) + " seconds")
     while True:
@@ -43,6 +46,7 @@ class DoorState(StateMachine):
         self.transition(self.OPEN_LOCKED)
 
   def OPEN_LOCKED(self):
+    self.generate_message({"event": self.name + "_OPEN_LOCKED"})
     self.v.set("OPEN_LOCKED")
     self.log.debug("turn off solenoid")
     self.log.debug("waiting up to " + str(self.stuck_open_timeout) + "seconds")
@@ -56,6 +60,7 @@ class DoorState(StateMachine):
         self.transition(self.STUCK_OPEN)
 
   def STUCK_OPEN(self):
+    self.generate_message({"event": self.name + "_STUCK_OPEN"})
     self.v.set("STUCK_OPEN")
     self.log.debug("door stuck open")
     while True:
@@ -66,6 +71,7 @@ class DoorState(StateMachine):
 
   def FORCED_OPEN(self):
     self.v.set("FORCED_OPEN")
+    self.generate_message({"event": self.name + "_FORCED_OPEN"})
     self.log.debug("door forced open")
     while True:
       ev = yield
