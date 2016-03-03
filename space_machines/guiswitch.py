@@ -51,7 +51,7 @@ class GuiSwitch(StateMachine):
     self.state = IntVar()
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
-    c = Checkbutton(frame, text="Expand", variable=self.state)
+    c = Checkbutton(frame, text="Switch", variable=self.state)
     c.pack(side=LEFT)
 
 
