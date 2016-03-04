@@ -10,7 +10,7 @@ from pystates import StateMachine
 class DoorState(StateMachine):
   def CLOSED_LOCKED(self):
     self.generate_message({"event": self.name + "_CLOSED_LOCKED"})
-    self.v.set("CLOSED_LOCKED")
+    if self.show_gui: self.v.set("CLOSED_LOCKED")
     self.log.debug("turn off solenoid")
     while True:
       ev = yield
@@ -21,7 +21,7 @@ class DoorState(StateMachine):
 
   def CLOSED_UNLOCKING(self):
     self.generate_message({"event": self.name + "_CLOSED_UNLOCKING"})
-    self.v.set("CLOSED_UNLOCKING")
+    if self.show_gui: self.v.set("CLOSED_UNLOCKING")
     self.log.debug("turn on solenoid")
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
     while True:
@@ -35,7 +35,7 @@ class DoorState(StateMachine):
 
   def OPEN_UNLOCKING(self):
     self.generate_message({"event": self.name + "_OPEN_UNLOCKING"})
-    self.v.set("OPEN_UNLOCKING")
+    if self.show_gui: self.v.set("OPEN_UNLOCKING")
     self.log.debug("waiting up to " + str(self.open_unlock_timeout) + " seconds")
     while True:
       ev = yield
@@ -47,7 +47,7 @@ class DoorState(StateMachine):
 
   def OPEN_LOCKED(self):
     self.generate_message({"event": self.name + "_OPEN_LOCKED"})
-    self.v.set("OPEN_LOCKED")
+    if self.show_gui: self.v.set("OPEN_LOCKED")
     self.log.debug("turn off solenoid")
     self.log.debug("waiting up to " + str(self.stuck_open_timeout) + "seconds")
     while True:
@@ -61,7 +61,7 @@ class DoorState(StateMachine):
 
   def STUCK_OPEN(self):
     self.generate_message({"event": self.name + "_STUCK_OPEN"})
-    self.v.set("STUCK_OPEN")
+    if self.show_gui: self.v.set("STUCK_OPEN")
     self.log.debug("door stuck open")
     while True:
       ev = yield
@@ -70,7 +70,7 @@ class DoorState(StateMachine):
         self.transition(self.CLOSED_LOCKED)
 
   def FORCED_OPEN(self):
-    self.v.set("FORCED_OPEN")
+    if self.show_gui: self.v.set("FORCED_OPEN")
     self.generate_message({"event": self.name + "_FORCED_OPEN"})
     self.log.debug("door forced open")
     while True:
@@ -82,11 +82,10 @@ class DoorState(StateMachine):
         self.log.debug("timeout!")
         self.transition(self.STUCK_OPEN)
 
-  def setup(self, out_queue, name, solenoid_pin, unlock_timeout, open_unlock_timeout, stuck_open_timeout):
+  def setup(self, out_queue, name, unlock_timeout=5, open_unlock_timeout=1, stuck_open_timeout=15):
     self.log = logging.getLogger("DoorState")
     self.out_queue = out_queue
     self.name = name
-    self.solenoid_pin=int(solenoid_pin)
     self.unlock_timeout = int(unlock_timeout)
     self.open_unlock_timeout = int(open_unlock_timeout)
     self.stuck_open_timeout = int(stuck_open_timeout)
@@ -99,6 +98,7 @@ class DoorState(StateMachine):
     super(DoorState, self).start(self.CLOSED_LOCKED)
 
   def config_gui(self, root):
+    self.show_gui = True
     # Set up the GUI part
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
@@ -114,7 +114,7 @@ def main():
   name = "TEST_DOOR"
 
   doorstate = DoorState(name=name)
-  doorstate.setup(out_queue, name=name, solenoid_pin=24)
+  doorstate.setup(out_queue, name=name)
   doorstate.start()
 
   doorstate.send_message({"event": "VALID_KEY"})

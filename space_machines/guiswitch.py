@@ -13,8 +13,7 @@ class GuiSwitch(StateMachine):
     self.logger.debug(self.name + " switch is on ")
     while True:
       ev = yield
-      state = self.state.get()
-      if state == 0:
+      if self.get_state() == 0:
         self.logger.debug("generating message: " + self.off_message)
         self.generate_message({"event": self.off_message})
         self.transition(self.OFF)
@@ -23,11 +22,17 @@ class GuiSwitch(StateMachine):
     self.logger.debug(self.name + " switch is off")
     while True:
       ev = yield
-      state = self.state.get()
+      state = self.get_state()
       if state == 1:
         self.logger.debug("generating message: " + self.on_message)
         self.generate_message({"event": self.on_message})
         self.transition(self.ON)
+
+  def get_state(self):
+    if self.show_gui: 
+      return self.state.get()
+    else:
+      return 0
 
   def setup(self, out_queue, name, on_message, off_message):
     self.logger = logging.getLogger("GuiSwitch")
@@ -47,6 +52,7 @@ class GuiSwitch(StateMachine):
     super(GuiSwitch, self).start(self.OFF)
 
   def config_gui(self, root):
+    self.show_gui = True
     # Set up the GUI part
     self.state = IntVar()
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)

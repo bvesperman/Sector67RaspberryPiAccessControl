@@ -95,6 +95,7 @@ class StateMachine(object):
     self.name = name and name or str(self.__class__.__name__)
     self.time = time
     self.logger = logging.getLogger("pystate.StateMachine")
+    self.show_gui = False
 
   def handle(self, ev):
     """
@@ -114,6 +115,7 @@ class StateMachine(object):
 
     Any args are passed to the eval method of the named state.
     """
+    self.logger.debug("pystate start called")
     self.state_gen = self.activate_state(state_func, state_args)
     self.in_queue = Queue.Queue()
     self.thread = ThreadedExecutor(self, self.in_queue)
@@ -121,10 +123,12 @@ class StateMachine(object):
     self.thread.start()
 
   def send_message(self, message):
-    self.in_queue.put(message)
+    if self.in_queue != None:
+      self.in_queue.put(message)
 
   def generate_message(self, message):
-    self.out_queue.put(message)
+    if self.out_queue != None:
+      self.out_queue.put(message)
 
   def transition(self, state_func, *state_args):
     """

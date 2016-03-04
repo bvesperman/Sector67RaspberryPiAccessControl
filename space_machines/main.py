@@ -5,6 +5,7 @@ import Queue
 import threading
 import time
 import datetime
+import sys
 
 from Tkinter import *
 
@@ -37,9 +38,9 @@ class MessageThread:
       try:
         message = out_queue.get(True, 0.1)
         logger.debug("got event:" + str(message))
-        #self.events.insert('end', str(datetime.datetime.now()).split('.')[0] + " event: " + str(message)  + "\n")
-        self.events.insert('end', str(datetime.datetime.now()) + " event: " + str(message)  + "\n")
-        self.events.see(END)
+        if show_gui:
+          self.events.insert('end', str(datetime.datetime.now()) + " event: " + str(message)  + "\n")
+          self.events.see(END)
         for machine in machines:
           logger.debug("sending " + str(message) + " to " + str(machine))
           machine.send_message(message)
@@ -49,11 +50,19 @@ class MessageThread:
         #logger.debug("no event seen")
         pass
 
+# Determine the configuration file to read
+import sys
+
+config_file_name='machine.conf'
+if len(sys.argv) == 2:
+   config_file_name = sys.argv[1]
+
 # Read the configuration file
 config = ConfigParser.RawConfigParser()
-config.read('machine.conf')
-#TODO: parse this from a main config section
-show_gui = True
+config.read(config_file_name)
+show_gui = False
+if config.getboolean('Main', 'show_gui'):
+  show_gui = True
 
 # Initialize logging
 logging.config.fileConfig('logging.conf')
@@ -92,7 +101,7 @@ logger.info("machine setup completed")
 
 broker = MessageThread()
 
-if show_gui:
+if show_gui: 
   logger.info("starting gui configuration")
   root = Tk()
   for machine in machines:
@@ -100,8 +109,6 @@ if show_gui:
     machine.config_gui(root)
   broker.config_gui(root)
 
-broker.start_thread()
-logger.info("broker started completed")
 
 # everything is configured, start each individual machine
 logger.info("starting machines")
@@ -110,6 +117,9 @@ for machine in machines:
   machine.start()
 
 logger.info("machine start completed")
+
+broker.start_thread()
+logger.info("broker started completed")
 
 if show_gui: 
   root.mainloop()
