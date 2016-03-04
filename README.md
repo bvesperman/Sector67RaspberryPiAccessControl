@@ -33,3 +33,10 @@ To install the neopixel library for the raspberry pi, you can run:
     sudo pip install rpi_ws281x
 
 this will install the necessary native libraries and python modules.  Code using the neopixel library must be run as root.
+
+# Running unit tests
+To execute the unit tests, run the following from the root of the repository:
+
+    python -m unittest discover -v
+
+some of the tests will be quite long-running as the test the state machine of things like the door which can have ~15 second timeouts
