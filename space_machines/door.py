@@ -12,6 +12,7 @@ class DoorState(StateMachine):
     self.generate_message({"event": self.name + "_CLOSED_LOCKED"})
     if self.show_gui: self.v.set("CLOSED_LOCKED")
     self.log.debug("turn off solenoid")
+    self.generate_message({"event": self.name + "_LOCK_DOOR"})
     while True:
       ev = yield
       if ev['event'] == "VALID_KEY":
@@ -20,9 +21,10 @@ class DoorState(StateMachine):
         self.transition(self.FORCED_OPEN)
 
   def CLOSED_UNLOCKING(self):
-    self.generate_message({"event": self.name + "_CLOSED_UNLOCKING"})
+    self.generate_message({"event": self.name + "_CLOSED_UNLOCKING", "timeout": self.unlock_timeout})
     if self.show_gui: self.v.set("CLOSED_UNLOCKING")
     self.log.debug("turn on solenoid")
+    self.generate_message({"event": self.name + "_UNLOCK_DOOR"})
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
     while True:
       ev = yield
@@ -49,6 +51,7 @@ class DoorState(StateMachine):
     self.generate_message({"event": self.name + "_OPEN_LOCKED"})
     if self.show_gui: self.v.set("OPEN_LOCKED")
     self.log.debug("turn off solenoid")
+    self.generate_message({"event": self.name + "_LOCK_DOOR"})
     self.log.debug("waiting up to " + str(self.stuck_open_timeout) + "seconds")
     while True:
       ev = yield
