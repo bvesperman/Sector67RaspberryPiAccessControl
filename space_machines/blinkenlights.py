@@ -7,39 +7,79 @@ from neopixel import *
 
 from pystates import StateMachine
 
-class BlinkenLights(StateMachine):
+import threading
+import sys
+import time
+ 
+class QuickChange:
+  def __init__(self):
+    self.set_next(self.theatre_chase_white)
+    self.curr_func = self.theatre_chase_white
+    self.wait_ms = 50
+ 
+  def main(self):
+    while True:
+      self.next_func()
+      self.curr_func = self.next_func
+ 
+  def theatre_chase_white(self):
+    self.theatre_chase(Color(255,255,255))
 
-  def colorWipe(self, strip, color, wait_ms=50):
-    """Wipe color across display a pixel at a time."""
-    self.log.debug("numpixels: " + str(strip.numPixels()))
-    for i in range(strip.numPixels()):
-      strip.setPixelColor(i, color)
-      strip.show()
-      time.sleep(wait_ms/1000.0)
-
-  def theaterChase(self, strip, color, wait_ms=50, iterations=10):
-    """Movie theater light style chaser animation."""
+  def theatre_chase(self, color):
+    """Movie theatre light style chaser animation."""
+    iterations=10
     for j in range(iterations):
       for q in range(3):
-        for i in range(0, strip.numPixels(), 3):
-          strip.setPixelColor(i+q, color)
-        strip.show()
-        time.sleep(wait_ms/1000.0)
-        for i in range(0, strip.numPixels(), 3):
-          strip.setPixelColor(i+q, 0)
+        for i in range(0, self.strip.numPixels(), 3):
+          self.strip.setPixelColor(i+q, color)
+        self.strip.show()
+        time.sleep(self.wait_ms/1000.0)
+        if self.next_func != self.curr_func:
+          break
+        for i in range(0, self.strip.numPixels(), 3):
+          self.strip.setPixelColor(i+q, 0)
+      if self.next_func != self.curr_func:
+        break
+
+ 
+  def color_wipe_red(self):
+    """Wipe color across display a pixel at a time."""
+    self.color_wipe(Color(255, 0, 0))
+
+  def color_wipe_green(self):
+    """Wipe color across display a pixel at a time."""
+    self.color_wipe(Color(0, 255, 0))
+
+  def color_wipe(self, color):
+    """Wipe color across display a pixel at a time."""
+    for i in range(self.strip.numPixels()):
+      self.strip.setPixelColor(i, color)
+      self.strip.show()
+      time.sleep(self.wait_ms/1000.0)
+      if self.next_func != self.curr_func:
+        break
+
+  def set_next(self, next_func):
+    self.next_func = next_func
+
+  def set_strip(self, strip):
+    self.strip = strip
+
+class BlinkenLights(StateMachine):
+
+  def VALID_KEY(self):
+    self.qc.set_next(self.qc.color_wipe_green)
+    while True:
+      ev = yield
+      if ev['event'] == "MAIN_DOOR_CLOSED_LOCKED":
+        self.transition(self.WAITING)
 
   def WAITING(self):
+    self.qc.set_next(self.qc.theatre_chase_white)
     while True:
-      # no state transitions for this class, read keys and send messages
-      while True:
-        ev = yield
-        if ev['event'] == "VALID_KEY":
-          self.log.debug('colorWipe started')
-          self.colorWipe(self.strip, Color(0, 255, 0))
-          self.log.debug('colorWipe stopped')
-        else:
-          self.colorWipe(self.strip, Color(0, 0, 255), 1)
-          self.colorWipe(self.strip, Color(255, 0, 255), 1)
+      ev = yield
+      if ev['event'] == "VALID_KEY":
+        self.transition(self.VALID_KEY)
 
   def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness):
     self.log = logging.getLogger("BlinkenLights")
@@ -53,7 +93,7 @@ class BlinkenLights(StateMachine):
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     # Create NeoPixel object with appropriate configuration.
     self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
-    self.strip = Adafruit_NeoPixel(16, 18, 800000, 5, False, 255)
+    #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
 
 
   """ Perform initialization here, detect the current state and send that
@@ -63,6 +103,12 @@ class BlinkenLights(StateMachine):
     # Intialize the library (must be called once before other functions).
     self.strip.begin()
     self.log.debug("start called")
+    self.qc = QuickChange()
+    self.qc.set_strip(self.strip)
+    self.thread = threading.Thread(target=self.qc.main)
+    self.thread.setDaemon(True)
+    self.thread.start()
+    self.log.debug("thread started")
     for i in range(self.strip.numPixels()):
       self.strip.setPixelColor(i, Color(0,255,0))
       self.strip.show()
