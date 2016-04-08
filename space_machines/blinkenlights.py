@@ -74,12 +74,23 @@ class BlinkenLights(StateMachine):
       if ev['event'] == "MAIN_DOOR_CLOSED_LOCKED":
         self.transition(self.WAITING)
 
+  def INVALID_KEY(self):
+    self.qc.set_next(self.qc.color_wipe_red)
+    while True:
+      ev = yield
+      if self.duration() > 2:
+        self.transition(self.WAITING)
+      if ev['event'] == "VALID_KEY":
+        self.transition(self.VALID_KEY)
+
   def WAITING(self):
     self.qc.set_next(self.qc.theatre_chase_white)
     while True:
       ev = yield
       if ev['event'] == "VALID_KEY":
         self.transition(self.VALID_KEY)
+      if ev['event'] == "INVALID_KEY":
+        self.transition(self.INVALID_KEY)
 
   def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness):
     self.log = logging.getLogger("BlinkenLights")

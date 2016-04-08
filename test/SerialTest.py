@@ -27,13 +27,9 @@ try:
    while True:
        # read the standard input to see if the RFID has been swiped
        #while sys.stdin in select.select([sys.stdin],[],[],0)[0]:
-       print("Before RFID serial read")
-       ser.flush()
-       time.sleep(0.5)
-       print("ready to read")
 
-       localRFID = ser.readline()
-       print(localRFID)
+       s = ser.read()
+       sys.stdout.write(s)
        
        #print("Before RFID serial read")
        #byte = ser.read(1)
