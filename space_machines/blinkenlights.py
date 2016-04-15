@@ -48,6 +48,25 @@ class QuickChange:
   def theatre_chase_white(self):
     self.theatre_chase(Color(255,255,255))
 
+  def flash_colors_red_black(self):
+    self.flash_colors(Color(255,0,0), Color(0,0,0))
+
+  def flash_colors(self, color1, color2):
+    """Cycle between two colors"""
+    iterations=10
+    for j in range(iterations):
+      for q in range(2):
+        for i in range(0, self.strip.numPixels(), 2):
+          self.strip.setPixelColor(i+q, color1)
+        for i in range(1, self.strip.numPixels(), 2):
+          self.strip.setPixelColor(i+q, 0)
+        self.strip.show()
+        time.sleep(self.wait_ms/1000.0)
+        if self.next_func != self.curr_func:
+          break
+      if self.next_func != self.curr_func:
+        break
+
   def theatre_chase(self, color):
     """Movie theatre light style chaser animation."""
     iterations=10
@@ -134,7 +153,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.WAITING)
 
   def INVALID_KEY(self):
-    self.qc.set_next(self.qc.color_wipe_red)
+    self.qc.set_next(self.qc.flash_colors_red_black)
     while True:
       ev = yield
       if self.duration() > 2:
