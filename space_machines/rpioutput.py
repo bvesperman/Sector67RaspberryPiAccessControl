@@ -34,13 +34,11 @@ class RpiGpioOutput(StateMachine):
     self.off_message = off_message
     self.initial_state = initial_state
 
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(self.gpio_pin, GPIO.OUT)
-
   """ Perform initialization here
   """
   def start(self):
-    #TODO: start in the off state
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(self.gpio_pin, GPIO.OUT)
     if (self.initial_state == "ON"):
       self.logger.debug("initial state: " + self.on_message)
       super(RpiGpioOutput, self).start(self.ON)
