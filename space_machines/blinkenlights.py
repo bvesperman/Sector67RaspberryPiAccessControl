@@ -22,6 +22,28 @@ class QuickChange:
       self.next_func()
       self.curr_func = self.next_func
  
+  def color_wipe_to_handle_green(self):
+    self.color_wipe_to_handle(self.strip.Color(0,255,0)
+
+  def color_wipe_to_handle(self, color):
+    """Wipe color across display a pixel at a time."""
+    handle = self.handle_pixel
+    pointing = 10
+    # turn all green
+    for i in range(self.strip.numPixels()):
+      self.strip.setPixelColor(i, color)
+    for i in range(pointing):
+      self.strip.setPixelColor(handle - i, self.strip.Color(0,0,0))
+      self.strip.setPixelColor(handle + i, self.strip.Color(0,0,0))
+    self.strip.show()
+    for i in range(pointing -1, -1, -1):
+      self.strip.setPixelColor(handle - i, color)
+      self.strip.setPixelColor(handle + i, color)
+      self.strip.show()
+      time.sleep(self.wait_ms/1000.0)
+      if self.next_func != self.curr_func:
+        break
+
   def theatre_chase_white(self):
     self.theatre_chase(Color(255,255,255))
 
@@ -59,6 +81,38 @@ class QuickChange:
       if self.next_func != self.curr_func:
         break
 
+  def wheel(self, pos):
+    """Generate rainbow colors across 0-255 positions."""
+    if pos < 85:
+      return self.strip.Color(pos * 3, 255 - pos * 3, 0)
+    elif pos < 170:
+      pos -= 85
+      return self.strip.Color(255 - pos * 3, 0, pos * 3)
+    else:
+      pos -= 170
+      return self.strip.Color(0, pos * 3, 255 - pos * 3)
+  
+  def rainbow(self):
+    """Draw rainbow that fades across all pixels at once."""
+    for j in range(256):
+      for i in range(self.strip.numPixels()):
+        self.strip.setPixelColor(i, self.wheel((i+j) & 255))
+      self.strip.show()
+      time.sleep(self.wait_ms/1000.0)
+      if self.next_func != self.curr_func:
+        break
+  
+  def rainbow_cycle(self):
+    """Draw rainbow that uniformly distributes itself across all pixels."""
+    for j in range(256*5):
+      for i in range(self.strip.numPixels()):
+        self.strip.setPixelColor(i, self.wheel(((i * 256 / self.strip.numPixels()) + j) & 255))
+      self.strip.show()
+      time.sleep(self.wait_ms/1000.0)
+      if self.next_func != self.curr_func:
+        break
+
+
   def set_next(self, next_func):
     self.next_func = next_func
 
@@ -68,7 +122,7 @@ class QuickChange:
 class BlinkenLights(StateMachine):
 
   def VALID_KEY(self):
-    self.qc.set_next(self.qc.color_wipe_green)
+    self.qc.set_next(self.qc.color_wipe_to_handle_green)
     while True:
       ev = yield
       if ev['event'] == "MAIN_DOOR_CLOSED_LOCKED":
@@ -84,7 +138,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.VALID_KEY)
 
   def WAITING(self):
-    self.qc.set_next(self.qc.theatre_chase_white)
+    self.qc.set_next(self.qc.rainbow_cycle)
     while True:
       ev = yield
       if ev['event'] == "VALID_KEY":
@@ -92,10 +146,12 @@ class BlinkenLights(StateMachine):
       if ev['event'] == "INVALID_KEY":
         self.transition(self.INVALID_KEY)
 
-  def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness):
+  def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel):
     self.log = logging.getLogger("BlinkenLights")
     self.out_queue = out_queue
     self.name = name
+    # the pixel closest to the handle
+    self.handle_pixel = handle_pixel
     self.led_count=int(led_count)      # Number of LED pixels.
     self.led_pin = int(led_pin)        # GPIO pin connected to the pixels (must support PWM!).
     self.led_freq_hz = int(led_freq_hz) # LED signal frequency in hertz (usually 800khz)
