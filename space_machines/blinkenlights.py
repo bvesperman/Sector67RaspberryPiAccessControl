@@ -12,10 +12,11 @@ import sys
 import time
  
 class QuickChange:
-  def __init__(self):
+  def __init__(self, handle_pixel):
     self.set_next(self.theatre_chase_white)
     self.curr_func = self.theatre_chase_white
     self.wait_ms = 50
+    self.handle_pixel = handle_pixel
  
   def main(self):
     while True:
@@ -23,7 +24,7 @@ class QuickChange:
       self.curr_func = self.next_func
  
   def color_wipe_to_handle_green(self):
-    self.color_wipe_to_handle(self.strip.Color(0,255,0)
+    self.color_wipe_to_handle(Color(0,255,0))
 
   def color_wipe_to_handle(self, color):
     """Wipe color across display a pixel at a time."""
@@ -33,8 +34,8 @@ class QuickChange:
     for i in range(self.strip.numPixels()):
       self.strip.setPixelColor(i, color)
     for i in range(pointing):
-      self.strip.setPixelColor(handle - i, self.strip.Color(0,0,0))
-      self.strip.setPixelColor(handle + i, self.strip.Color(0,0,0))
+      self.strip.setPixelColor(handle - i, Color(0,0,0))
+      self.strip.setPixelColor(handle + i, Color(0,0,0))
     self.strip.show()
     for i in range(pointing -1, -1, -1):
       self.strip.setPixelColor(handle - i, color)
@@ -84,13 +85,13 @@ class QuickChange:
   def wheel(self, pos):
     """Generate rainbow colors across 0-255 positions."""
     if pos < 85:
-      return self.strip.Color(pos * 3, 255 - pos * 3, 0)
+      return Color(pos * 3, 255 - pos * 3, 0)
     elif pos < 170:
       pos -= 85
-      return self.strip.Color(255 - pos * 3, 0, pos * 3)
+      return Color(255 - pos * 3, 0, pos * 3)
     else:
       pos -= 170
-      return self.strip.Color(0, pos * 3, 255 - pos * 3)
+      return Color(0, pos * 3, 255 - pos * 3)
   
   def rainbow(self):
     """Draw rainbow that fades across all pixels at once."""
@@ -151,7 +152,7 @@ class BlinkenLights(StateMachine):
     self.out_queue = out_queue
     self.name = name
     # the pixel closest to the handle
-    self.handle_pixel = handle_pixel
+    self.handle_pixel = int(handle_pixel)
     self.led_count=int(led_count)      # Number of LED pixels.
     self.led_pin = int(led_pin)        # GPIO pin connected to the pixels (must support PWM!).
     self.led_freq_hz = int(led_freq_hz) # LED signal frequency in hertz (usually 800khz)
@@ -170,7 +171,7 @@ class BlinkenLights(StateMachine):
     # Intialize the library (must be called once before other functions).
     self.strip.begin()
     self.log.debug("start called")
-    self.qc = QuickChange()
+    self.qc = QuickChange(self.handle_pixel)
     self.qc.set_strip(self.strip)
     self.thread = threading.Thread(target=self.qc.main)
     self.thread.setDaemon(True)
