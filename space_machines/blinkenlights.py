@@ -13,8 +13,8 @@ import time
  
 class QuickChange:
   def __init__(self, handle_pixel):
-    self.set_next(self.theatre_chase_white)
-    self.curr_func = self.theatre_chase_white
+    self.set_next(self.color_wipe_blue)
+    self.curr_func = self.color_wipe_blue
     self.wait_ms = 50
     self.handle_pixel = handle_pixel
  
@@ -72,6 +72,10 @@ class QuickChange:
   def color_wipe_green(self):
     """Wipe color across display a pixel at a time."""
     self.color_wipe(Color(0, 255, 0))
+
+  def color_wipe_blue(self):
+    """Wipe color across display a pixel at a time."""
+    self.color_wipe(Color(0, 0, 255))
 
   def color_wipe(self, color):
     """Wipe color across display a pixel at a time."""
@@ -177,10 +181,6 @@ class BlinkenLights(StateMachine):
     self.thread.setDaemon(True)
     self.thread.start()
     self.log.debug("thread started")
-    for i in range(self.strip.numPixels()):
-      self.strip.setPixelColor(i, Color(0,255,0))
-      self.strip.show()
-      time.sleep(50/1000.0)
     super(BlinkenLights, self).start(self.WAITING)
 
 def main():
