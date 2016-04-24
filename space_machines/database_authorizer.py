@@ -16,17 +16,18 @@ class DatabaseAuthorizer(StateMachine):
 
   #self explanatory, really. Useful only for displaying the username or account information, not for regular authorization checking.
   def get_userdata_by_rfid(self, rfid): 
-    message=[]
+    message={}
     try:
       decimal_id = int(rfid, 16)& 0x00FFFFFFFF
       conn = sqlite3.connect(self.db_connection_string)
-      command = "Select RFID, uid, name, user_login, account_balance From AuthorizedUsers Where RFID = '{0}'".format(decimal_id)
+      command = "Select RFID, uid, user_login From AuthorizedUsers Where RFID = '{0}'".format(decimal_id)
       for row in conn.execute(command):
-        message["ID"] = row["uid"]
-        message["display_name"] = row["name"]
+        message["ID"] = row[0]
+        message["uid"] = row[1]
+        message["user_login"] = row[2]
       conn.close()
     except Exception as e:
-      self.log.info("Error encountered during authorization {0}".format(str(e)))
+      self.log.exception("Error encountered during authorization {0}".format(str(e)))
       return {"status": "error"}
     return message
 
@@ -52,7 +53,7 @@ class DatabaseAuthorizer(StateMachine):
       conn.execute("DROP TABLE AuthorizedUsers")
     except:
       self.log.warn("The drop table operation failed, if this is a new installation that is expected")
-    conn.execute("CREATE TABLE AuthorizedUsers(RFID, uid, name)")
+    conn.execute("CREATE TABLE AuthorizedUsers(RFID, uid, user_login)")
     #conn.execute("Delete From AuthorizedUsers")
     conn.commit()
     conn.close()
@@ -64,7 +65,7 @@ class DatabaseAuthorizer(StateMachine):
     conn = sqlite3.connect(self.db_connection_string)
     self.log.debug("Insert: after getting a connection")
     for user in users:
-      command = "Insert Into AuthorizedUsers (RFID, uid, name) values ('{0}',{1},'{2}');".format(user["rfid"],user["uid"],user["username"])
+      command = "Insert Into AuthorizedUsers (RFID, uid, user_login) values ('{0}',{1},'{2}');".format(user["rfid"],user["uid"],user["username"])
       self.log.info("Insert: SQL executed: [" + command + "]")
       conn.execute(command)
       self.log.info("Insert: SQL executed: [" + command + "]")
@@ -87,14 +88,14 @@ class DatabaseAuthorizer(StateMachine):
         account_balance = "UNKNOWN"
         self.log.debug('attempting to authorize key [' + key + ']')
         userdata = self.get_userdata_by_rfid(key)
-        if "message" in userdata:
-          if "ID" in userdata["message"]:
-            id = str(userdata["message"]["ID"]) 
-          if "display_name" in userdata["message"]:
-            display_name = str(userdata["message"]["display_name"]) 
+        self.log.debug("the message data is: " + str(userdata))
+        if "ID" in userdata:
+          id = str(userdata["ID"]) 
+        if "user_login" in userdata:
+          user_login = str(userdata["user_login"]) 
         is_authorized = self.is_rfid_authorized(key)
         if is_authorized:
-          self.log.info("key [" + key + "] was authorized as user [" + user_login + "]")
+          self.log.info("key was authorized as user [" + user_login + "]")
           message = {"event": "VALID_KEY", "key": key, "user_login": user_login, "id": id, "display_name": display_name, "account_balance": account_balance}
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)

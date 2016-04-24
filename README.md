@@ -22,6 +22,7 @@ TODO: provide an example
 Since this project is designed for use on a Raspberry Pi, Pi-specific setup instructions are included here.  You will generally want to start with a modern Raspbian build, currently Jessie.  On top of that, you will want to:
 
 TODO, finish documentation: 
+## change the host name
 ## disable serial TTY
 ## disable screen saver
 ## download and install state_machine and any dependencies

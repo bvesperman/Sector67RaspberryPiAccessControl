@@ -20,24 +20,29 @@ class SerialRfidReader(StateMachine):
         # seems to resolve that.  Reading character by character is a necessary
         # hack to resolve that
         key = ""
-        while True:
-          s = self.ser.read()
-          key = key + s
-          if s == "\r":
-            #bytes = ":".join("{:02x}".format(ord(c)) for c in key)
-            self.log.debug("read key KEY_READ [" + key + "]")
-            break
-        # clear all extra input
-        key = key.strip()
-        if key == "":
-          break 
-        if self.cache.get(key) == key:
-          self.log.debug("ignoring duplicate key read [" + key + "]")
-          break 
-        message = {"event": "KEY_READ", "key": key}
-        self.cache[key] = key
-        self.logger.debug("generating message: " + str(message))
-        self.generate_message(message)
+        try:
+          while True:
+            s = self.ser.read()
+            key = key + s
+            if s == "\r":
+              #bytes = ":".join("{:02x}".format(ord(c)) for c in key)
+              self.log.debug("read key KEY_READ [" + key + "]")
+              break
+          # clear all extra input
+          key = key.strip()
+          if key == "":
+            break 
+          if self.cache.get(key) == key:
+            self.log.debug("ignoring duplicate key read [" + key + "]")
+            break 
+          #attempt to parse the key in the same manner as downstream
+          decimal_id = int(key, 16)& 0x00FFFFFFFF
+          message = {"event": "KEY_READ", "key": key}
+          self.cache[key] = key
+          self.logger.debug("generating message: " + str(message))
+          self.generate_message(message)
+        except:
+          self.logger.exception("An exception was encountered while reading a key")
 
   def setup(self, out_queue, name, port, baud, cache_timeout):
     self.log = logging.getLogger("SerialRfidReader")
