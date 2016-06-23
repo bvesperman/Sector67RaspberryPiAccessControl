@@ -2,14 +2,12 @@ import logging
 import time
 import Queue
 import threading
-
-from neopixel import *
-
-from pystates import StateMachine
-
-import threading
 import sys
-import time
+from Tkinter import *
+from pystates import StateMachine
+##from neopixel import * #-----I double hashtagged code i disabled relating to this.
+import math
+import random
  
 class QuickChange:
   def __init__(self, handle_pixel):
@@ -23,8 +21,15 @@ class QuickChange:
       self.next_func()
       self.curr_func = self.next_func
  
+  def Color(self,red, green, blue):
+    """Convert the provided red, green, blue color to a 24-bit color value.
+    Each color component should be a value 0-255 where 0 is the lowest intensity
+    and 255 is the highest intensity.
+    """
+    return (red << 16) | (green << 8) | blue
+
   def color_wipe_to_handle_green(self):
-    self.color_wipe_to_handle(Color(0,255,0))
+    self.color_wipe_to_handle(self.Color(0,255,0))
 
   def color_wipe_to_handle(self, color):
     """Wipe color across display a pixel at a time."""
@@ -34,8 +39,8 @@ class QuickChange:
     for i in range(self.strip.numPixels()):
       self.strip.setPixelColor(i, color)
     for i in range(pointing):
-      self.strip.setPixelColor(handle - i, Color(0,0,0))
-      self.strip.setPixelColor(handle + i, Color(0,0,0))
+      self.strip.setPixelColor(handle - i, self.Color(0,0,0))
+      self.strip.setPixelColor(handle + i, self.Color(0,0,0))
     self.strip.show()
     for i in range(pointing -1, -1, -1):
       self.strip.setPixelColor(handle - i, color)
@@ -46,10 +51,10 @@ class QuickChange:
         break
 
   def theatre_chase_white(self):
-    self.theatre_chase(Color(255,255,255))
+    self.theatre_chase(self.Color(255,255,255))
 
   def flash_colors_red_black(self):
-    self.flash_colors(Color(255,0,0), Color(0,0,0))
+    self.flash_colors(self.Color(255,0,0), self.Color(0,0,0))
 
   def flash_colors(self, color1, color2):
     """Cycle between two colors"""
@@ -86,15 +91,15 @@ class QuickChange:
  
   def color_wipe_red(self):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe(Color(255, 0, 0))
+    self.color_wipe(self.Color(255, 0, 0))
 
   def color_wipe_green(self):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe(Color(0, 255, 0))
+    self.color_wipe(self.Color(0, 255, 0))
 
   def color_wipe_blue(self):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe(Color(0, 0, 255))
+    self.color_wipe(self.Color(0, 0, 255))
 
   def color_wipe(self, color):
     """Wipe color across display a pixel at a time."""
@@ -108,13 +113,13 @@ class QuickChange:
   def wheel(self, pos):
     """Generate rainbow colors across 0-255 positions."""
     if pos < 85:
-      return Color(pos * 3, 255 - pos * 3, 0)
+      return self.Color(pos * 3, 255 - pos * 3, 0)
     elif pos < 170:
       pos -= 85
-      return Color(255 - pos * 3, 0, pos * 3)
+      return self.Color(255 - pos * 3, 0, pos * 3)
     else:
       pos -= 170
-      return Color(0, pos * 3, 255 - pos * 3)
+      return self.Color(0, pos * 3, 255 - pos * 3)
   
   def rainbow(self):
     """Draw rainbow that fades across all pixels at once."""
@@ -146,6 +151,7 @@ class QuickChange:
 class BlinkenLights(StateMachine):
 
   def VALID_KEY(self):
+    self.state.set("VALID_KEY")
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
     while True:
       ev = yield
@@ -153,6 +159,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.WAITING)
 
   def INVALID_KEY(self):
+    self.state.set("INVALID_KEY")
     self.qc.set_next(self.qc.flash_colors_red_black)
     while True:
       ev = yield
@@ -162,6 +169,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.VALID_KEY)
 
   def WAITING(self):
+    self.state.set("WAITING")
     self.qc.set_next(self.qc.rainbow_cycle)
     while True:
       ev = yield
@@ -169,6 +177,22 @@ class BlinkenLights(StateMachine):
         self.transition(self.VALID_KEY)
       if ev['event'] == "INVALID_KEY":
         self.transition(self.INVALID_KEY)
+
+  def config_gui(self, root):
+    # Set up the GUI part
+    frame = LabelFrame(root, text="STATE", padx=5, pady=5)
+    frame.pack(fill=X)
+    self.state = StringVar()
+    self.state.set("[STATE]")
+    label = Label(frame, textvariable = self.state)
+    label.pack(side=LEFT)
+    self.info_frame = frame
+    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5)
+    frame2.pack(fill=X)
+    self.wait_ms = 50
+    self.next_func = 1
+    self.curr_func = 1
+    self.strip = MockStrip(self.led_count, frame2)
 
   def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel):
     self.log = logging.getLogger("BlinkenLights")
@@ -183,7 +207,7 @@ class BlinkenLights(StateMachine):
     self.led_brightness = int(led_brightness) # Set to 0 for darkest and 255 for brightest
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     # Create NeoPixel object with appropriate configuration.
-    self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
+    ##self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
     #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
 
 
@@ -201,6 +225,52 @@ class BlinkenLights(StateMachine):
     self.thread.start()
     self.log.debug("thread started")
     super(BlinkenLights, self).start(self.WAITING)
+
+class MockStrip:
+  def __init__(self, led_count, frame):
+    self.led_count = led_count
+    self.rand = random.Random()
+    self.pending = []
+    self.labels = []
+
+    for i in range(led_count):
+      self.pending.append("#000000")
+
+    for i in range(led_count):
+      lbl = Label(frame, text=str(i), width = 2)
+      self.labels.append(lbl)
+      lbl.pack(side=LEFT, expand = True, fill = X)
+      lbl.configure(bg="#000000")
+
+    self.show() 
+
+  def show(self):
+    i=0
+    for label in self.labels:
+      #print "i is " + str(i)
+      #print "color is " + self.pending[i]
+      label.configure(bg=self.pending[i])
+      i=i+1
+
+  def begin(self):
+    pass
+
+  def setPixelColor(self, pixel, color):
+    self.pending[pixel]=self.tk_color(color)
+
+  def getPixelColor(self, pixel):
+    return self.pending[pixel]
+
+  def tk_color(self,color):
+    red=(color & 0xff0000) >> 16
+    green=(color & 0x00ff00) >> 8
+    blue=(color & 0x0000ff)
+    newcolor='#%02X%02X%02X' % (red,green,blue)
+    return newcolor
+
+  def numPixels(self):
+    return self.led_count
+
 
 def main():
   out_queue = Queue.Queue()

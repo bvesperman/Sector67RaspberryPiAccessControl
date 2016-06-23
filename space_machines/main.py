@@ -123,7 +123,7 @@ logger.info("broker started completed")
 
 if show_gui: 
   root.mainloop()
-  root.destroy() 
+  #root.destroy() 
 else:
   while True:
     time.sleep(60)
