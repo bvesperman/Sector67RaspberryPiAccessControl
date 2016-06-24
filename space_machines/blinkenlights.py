@@ -8,6 +8,7 @@ from pystates import StateMachine
 ##from neopixel import * #-----I double hashtagged code i disabled relating to this.
 import math
 import random
+
  
 class QuickChange:
   def __init__(self, handle_pixel):
@@ -15,12 +16,20 @@ class QuickChange:
     self.curr_func = self.color_wipe_blue
     self.wait_ms = 50
     self.handle_pixel = handle_pixel
- 
+
   def main(self):
     while True:
       self.next_func()
       self.curr_func = self.next_func
  
+
+  def set_next(self, next_func):
+    self.next_func = next_func
+    #print(next_func)
+
+  def set_strip(self, strip):
+    self.strip = strip
+
   def Color(self,red, green, blue):
     """Convert the provided red, green, blue color to a 24-bit color value.
     Each color component should be a value 0-255 where 0 is the lowest intensity
@@ -28,9 +37,64 @@ class QuickChange:
     """
     return (red << 16) | (green << 8) | blue
 
+  def wheel(self, pos):
+    """Generate rainbow colors across 0-255 positions."""
+    if pos < 85:
+      return self.Color(pos * 3, 255 - pos * 3, 0)
+    elif pos < 170:
+      pos -= 85
+      return self.Color(255 - pos * 3, 0, pos * 3)
+    else:
+      pos -= 170
+      return self.Color(0, pos * 3, 255 - pos * 3)
+#----------------------------------------------------------------------------------------------------
   def color_wipe_to_handle_green(self):
+    """Wipe color across display a pixel at a time."""
     self.color_wipe_to_handle(self.Color(0,255,0))
 
+  def theatre_chase_white(self):
+    """Movie theatre light style chaser animation."""
+    self.theatre_chase(self.Color(255,255,255))
+
+  def flash_colors_red_black(self):
+    """Cycle between two colors"""
+    self.flash_colors(self.Color(255,0,0), self.Color(128,0,0))
+ 
+  def color_wipe_red(self):
+    """Wipe color across display a pixel at a time."""
+    self.color_wipe(self.Color(255, 0, 0))
+
+  def color_wipe_green(self):
+    """Wipe color across display a pixel at a time."""
+    self.color_wipe(self.Color(0, 255, 0))
+
+  def color_wipe_blue(self):
+    """Wipe color across display a pixel at a time."""
+    self.color_wipe(self.Color(0, 0, 255))
+
+  def set_color_green(self):
+    """Sets the color of all pixels."""
+    self.set_strip_color(self.Color(0,255,0))
+
+  def rainbow(self):
+    """Draw rainbow that fades across all pixels at once."""
+    for j in range(256):
+      for i in range(self.strip.numPixels()):
+        self.strip.setPixelColor(i, self.wheel((i+j) & 255))
+      self.strip.show()
+      time.sleep(self.wait_ms/1000.0)
+      if self.next_func != self.curr_func:
+        break
+  
+  def rainbow_cycle(self):
+    """Draw rainbow that uniformly distributes itself across all pixels."""
+    for j in range(256*5):
+      for i in range(self.strip.numPixels()):
+        self.strip.setPixelColor(i, self.wheel(((i * 256 / self.strip.numPixels()) + j) & 255))
+      self.strip.show()
+      time.sleep(self.wait_ms/1000.0)
+      if self.next_func != self.curr_func:
+        break
   def color_wipe_to_handle(self, color):
     """Wipe color across display a pixel at a time."""
     handle = self.handle_pixel
@@ -38,9 +102,13 @@ class QuickChange:
     # turn all green
     for i in range(self.strip.numPixels()):
       self.strip.setPixelColor(i, color)
+      if self.next_func != self.curr_func:
+        break
     for i in range(pointing):
       self.strip.setPixelColor(handle - i, self.Color(0,0,0))
       self.strip.setPixelColor(handle + i, self.Color(0,0,0))
+      if self.next_func != self.curr_func:
+        break
     self.strip.show()
     for i in range(pointing -1, -1, -1):
       self.strip.setPixelColor(handle - i, color)
@@ -49,12 +117,6 @@ class QuickChange:
       time.sleep(self.wait_ms/1000.0)
       if self.next_func != self.curr_func:
         break
-
-  def theatre_chase_white(self):
-    self.theatre_chase(self.Color(255,255,255))
-
-  def flash_colors_red_black(self):
-    self.flash_colors(self.Color(255,0,0), self.Color(0,0,0))
 
   def flash_colors(self, color1, color2):
     """Cycle between two colors"""
@@ -88,19 +150,6 @@ class QuickChange:
       if self.next_func != self.curr_func:
         break
 
- 
-  def color_wipe_red(self):
-    """Wipe color across display a pixel at a time."""
-    self.color_wipe(self.Color(255, 0, 0))
-
-  def color_wipe_green(self):
-    """Wipe color across display a pixel at a time."""
-    self.color_wipe(self.Color(0, 255, 0))
-
-  def color_wipe_blue(self):
-    """Wipe color across display a pixel at a time."""
-    self.color_wipe(self.Color(0, 0, 255))
-
   def color_wipe(self, color):
     """Wipe color across display a pixel at a time."""
     for i in range(self.strip.numPixels()):
@@ -110,43 +159,11 @@ class QuickChange:
       if self.next_func != self.curr_func:
         break
 
-  def wheel(self, pos):
-    """Generate rainbow colors across 0-255 positions."""
-    if pos < 85:
-      return self.Color(pos * 3, 255 - pos * 3, 0)
-    elif pos < 170:
-      pos -= 85
-      return self.Color(255 - pos * 3, 0, pos * 3)
-    else:
-      pos -= 170
-      return self.Color(0, pos * 3, 255 - pos * 3)
-  
-  def rainbow(self):
-    """Draw rainbow that fades across all pixels at once."""
-    for j in range(256):
-      for i in range(self.strip.numPixels()):
-        self.strip.setPixelColor(i, self.wheel((i+j) & 255))
       self.strip.show()
-      time.sleep(self.wait_ms/1000.0)
-      if self.next_func != self.curr_func:
-        break
-  
-  def rainbow_cycle(self):
-    """Draw rainbow that uniformly distributes itself across all pixels."""
-    for j in range(256*5):
-      for i in range(self.strip.numPixels()):
-        self.strip.setPixelColor(i, self.wheel(((i * 256 / self.strip.numPixels()) + j) & 255))
-      self.strip.show()
-      time.sleep(self.wait_ms/1000.0)
       if self.next_func != self.curr_func:
         break
 
 
-  def set_next(self, next_func):
-    self.next_func = next_func
-
-  def set_strip(self, strip):
-    self.strip = strip
 
 class BlinkenLights(StateMachine):
 
@@ -226,6 +243,7 @@ class BlinkenLights(StateMachine):
     self.log.debug("thread started")
     super(BlinkenLights, self).start(self.WAITING)
 
+
 class MockStrip:
   def __init__(self, led_count, frame):
     self.led_count = led_count
@@ -270,7 +288,6 @@ class MockStrip:
 
   def numPixels(self):
     return self.led_count
-
 
 def main():
   out_queue = Queue.Queue()
