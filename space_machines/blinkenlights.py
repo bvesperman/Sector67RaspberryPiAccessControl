@@ -288,7 +288,6 @@ class BlinkenLights(StateMachine):
     # Set up the GUI part
     frame = LabelFrame(root, text="STATE", padx=5, pady=5)
     frame.pack(fill=X)
-    self.state = StringVar()
     self.state.set("[STATE]")
     label = Label(frame, textvariable = self.state)
     label.pack(side=LEFT)
@@ -323,6 +322,7 @@ class BlinkenLights(StateMachine):
   """
   def start(self):
     # Intialize the library (must be called once before other functions).
+    self.state = StringVar()
     self.strip.begin()
     self.log.debug("start called")
     self.qc = QuickChange(self.handle_pixel)
