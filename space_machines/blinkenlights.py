@@ -221,6 +221,10 @@ class BlinkenLights(StateMachine):
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
     while True:
       ev = yield
+      if ev['event'] == "DOOR_OPENED":
+        self.transition(self.DOOR_OPENED)
+      if ev['event'] == "DOOR_CLOSED":
+        self.transition(self.WAITING)
       if ev['event'] == "MAIN_DOOR_CLOSED_LOCKED":
         self.transition(self.WAITING)
 
@@ -231,8 +235,33 @@ class BlinkenLights(StateMachine):
       ev = yield
       if self.duration() > 2:
         self.transition(self.WAITING)
+
+  def MAIN_DOOR_FORCED_OPEN(self):
+    self.state.set("MAIN_DOOR_FORCED_OPEN")
+    self.qc.set_next(self.qc.flash_colors_red_black)
+    #self.qc.set_next(self.qc.flash_colors_red_black)
+    while True:
+      ev = yield
       if ev['event'] == "VALID_KEY":
         self.transition(self.VALID_KEY)
+
+  def DOOR_OPENED(self):
+    self.state.set("DOOR_OPENED")
+    self.qc.set_next(self.qc.fade_green_to_red)
+    while True:
+      ev = yield
+      if ev['event'] == "DOOR_CLOSED":
+        self.transition(self.WAITING)
+      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
+        self.transition(self.MAIN_DOOR_STUCK_OPEN)
+
+  def MAIN_DOOR_STUCK_OPEN(self):
+    self.state.set("DOOR_OPENED")
+    self.qc.set_next(self.qc.flash_colors_red_black)
+    while True:
+      ev = yield
+      if ev['event'] == "DOOR_CLOSED":
+        self.transition(self.WAITING)
 
   def WAITING(self):
     self.state.set("WAITING")
@@ -243,6 +272,17 @@ class BlinkenLights(StateMachine):
         self.transition(self.VALID_KEY)
       if ev['event'] == "INVALID_KEY":
         self.transition(self.INVALID_KEY)
+      if ev['event'] == "MAIN_DOOR_FORCED_OPEN":
+        self.transition(self.MAIN_DOOR_FORCED_OPEN)
+        #self.transition(self.MAIN_DOOR_FORCED_OPEN)
+      """if ev['event'] == "VALID_KEY":
+        self.transition(self.VALID_KEY)
+      if ev['event'] == "VALID_KEY":
+        self.transition(self.VALID_KEY)
+      if ev['event'] == "VALID_KEY":
+        self.transition(self.VALID_KEY)
+      if ev['event'] == "VALID_KEY":
+        self.transition(self.VALID_KEY)"""
 
   def config_gui(self, root):
     # Set up the GUI part
