@@ -21,7 +21,6 @@ class QuickChange:
     while True:
       self.next_func()
       self.curr_func = self.next_func
- 
 
   def set_next(self, next_func):
     self.next_func = next_func
@@ -29,6 +28,10 @@ class QuickChange:
 
   def set_strip(self, strip):
     self.strip = strip
+
+  def int_color(self, color):
+    """returns color to a truple of integers"""
+    return (int(bin(color)[2:].zfill(24)[:-16],2), int(bin(color)[2:].zfill(24)[-16:-8],2), int(bin(color)[2:].zfill(24)[-8:],2))
 
   def Color(self,red, green, blue):
     """Convert the provided red, green, blue color to a 24-bit color value.
@@ -75,6 +78,11 @@ class QuickChange:
   def set_color_green(self):
     """Sets the color of all pixels."""
     self.set_strip_color(self.Color(0,255,0))
+
+  def fade_green_to_red(self):
+    """fade from one color to another"""
+    self.fade_time = self.stuck_open_timeout
+    self.fade(self.Color(0,255,0),self.Color(255,0,0))
 
   def rainbow(self):
     """Draw rainbow that fades across all pixels at once."""
@@ -159,10 +167,51 @@ class QuickChange:
       if self.next_func != self.curr_func:
         break
 
+  def set_strip_color(self, color):
+    """Sets the color of all pixels."""
+    for i in range(self.strip.numPixels()):
+      self.strip.setPixelColor(i, color)
       self.strip.show()
       if self.next_func != self.curr_func:
         break
 
+  def fade(self, color1, color2):
+    """fade from one color to another"""
+    def interval(index):
+      return abs((x[index]-y[index])/tot_frames) or 1
+    x = self.int_color(color1)
+    y = self.int_color(color2)
+    temp = []
+    time_0 = time.time()
+    self.set_strip_color(self.Color(*x))
+    frametime = time.time() - time_0
+    tot_frames = float((self.fade_time or 15)/(frametime + self.wait_ms/1000.0))
+    i = [interval(0), interval(1), interval(2)]
+    #print("x:{0} |y:{1} |frametime:{2} |tot_frames:{3} |i:{4}".format(x,y,frametime,tot_frames,i))
+    #print(0,x)
+    for t in range(int(tot_frames)):
+      for j in range(3):
+        if x[j]>y[j]:
+          z = x[j] - i[j]
+        elif x[j]<y[j]:
+          z = x[j] + i[j]
+        elif x[j]==y[j]:
+          z = x[j]
+        if z >255 or z<0:
+          temp.append(y[j])
+        else:
+          temp.append(z)
+      x = temp
+      temp = []
+      self.set_strip_color(self.Color(*[int(round(n)) for n in x]))
+      if self.next_func != self.curr_func:
+        return
+      time.sleep(self.wait_ms/1000.0)#----------why is this necessary?--BK
+    self.set_strip_color(color2)
+    while True:
+      if self.next_func != self.curr_func:
+        return
+      time.sleep(self.wait_ms/1000.0)
 
 
 class BlinkenLights(StateMachine):
@@ -211,7 +260,7 @@ class BlinkenLights(StateMachine):
     self.curr_func = 1
     self.strip = MockStrip(self.led_count, frame2)
 
-  def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel):
+  def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel, stuck_open_timeout):
     self.log = logging.getLogger("BlinkenLights")
     self.out_queue = out_queue
     self.name = name
@@ -223,6 +272,7 @@ class BlinkenLights(StateMachine):
     self.led_dma = int(led_dma)         # DMA channel to use for generating signal (try 5)
     self.led_brightness = int(led_brightness) # Set to 0 for darkest and 255 for brightest
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
+    self.stuck_open_timeout = int(stuck_open_timeout)
     # Create NeoPixel object with appropriate configuration.
     ##self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
     #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
@@ -237,6 +287,7 @@ class BlinkenLights(StateMachine):
     self.log.debug("start called")
     self.qc = QuickChange(self.handle_pixel)
     self.qc.set_strip(self.strip)
+    self.qc.stuck_open_timeout = self.stuck_open_timeout
     self.thread = threading.Thread(target=self.qc.main)
     self.thread.setDaemon(True)
     self.thread.start()
@@ -294,7 +345,7 @@ def main():
   logging.basicConfig(level=logging.DEBUG)
   name = "BLINKENLIGHTS"
   machine = BlinkenLights(name=name)
-  machine.setup(out_queue, name=name, led_count=16, led_pin=18, led_freq_hz=800000, led_dma=5, led_invert="False", led_brightness=255)
+  machine.setup(out_queue, name=name, led_count=16, led_pin=18, led_freq_hz=800000, led_dma=5, led_invert="False", led_brightness=255, handle_pixel = 8, stuck_open_timeout = 15)
   machine.start()
   machine.send_message({"event": "VALID_KEY"})
 
