@@ -40,10 +40,14 @@ sudo systemctl enable myscript.service
 sudo systemctl status myscript.service
 
 
-## install the rpi_ws281x dependency
-To install the neopixel library for the raspberry pi, you can run:
+## install the dependencies
+To install the python-dev dependency, you can run:
 
-    sudo pip install rpi_ws281x
+	sudo apt-get install python-dev
+
+To install the other dependencies for the raspberry pi, you can run:
+
+    sudo pip install [location of the directory]/Sector67RaspberryPiAccessControl/requirements.txt
 
 this will install the necessary native libraries and python modules.  Code using the neopixel library must be run as root.
 
