@@ -9,6 +9,11 @@ from pystates import StateMachine
 import math
 import random
 
+
+class NullClass:
+  def set(self,state):
+    pass
+
  
 class QuickChange:
   def __init__(self, handle_pixel):
@@ -132,9 +137,15 @@ class QuickChange:
     for j in range(iterations):
       for q in range(2):
         for i in range(0, self.strip.numPixels(), 2):
-          self.strip.setPixelColor(i+q, color1)
+          if q:
+            self.strip.setPixelColor(i, color1)
+          else:
+            self.strip.setPixelColor(i, color2)
         for i in range(1, self.strip.numPixels(), 2):
-          self.strip.setPixelColor(i+q, 0)
+          if q:
+            self.strip.setPixelColor(i, color2)
+          else:
+            self.strip.setPixelColor(i, color1)
         self.strip.show()
         time.sleep(self.wait_ms/1000.0)
         if self.next_func != self.curr_func:
@@ -288,6 +299,7 @@ class BlinkenLights(StateMachine):
     # Set up the GUI part
     frame = LabelFrame(root, text="STATE", padx=5, pady=5)
     frame.pack(fill=X)
+    self.state = StringVar()
     self.state.set("[STATE]")
     label = Label(frame, textvariable = self.state)
     label.pack(side=LEFT)
@@ -312,6 +324,7 @@ class BlinkenLights(StateMachine):
     self.led_brightness = int(led_brightness) # Set to 0 for darkest and 255 for brightest
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     self.stuck_open_timeout = int(stuck_open_timeout)
+    self.state = NullClass()
     # Create NeoPixel object with appropriate configuration.
     ##self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
     #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
@@ -322,7 +335,6 @@ class BlinkenLights(StateMachine):
   """
   def start(self):
     # Intialize the library (must be called once before other functions).
-    self.state = StringVar()
     self.strip.begin()
     self.log.debug("start called")
     self.qc = QuickChange(self.handle_pixel)
