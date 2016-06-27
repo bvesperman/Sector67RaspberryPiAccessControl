@@ -1,4 +1,2 @@
 RPi.GPIO
 rpi_ws281x
-expiringdict
-suds
