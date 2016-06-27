@@ -16,17 +16,17 @@ class TextToSpeech(StateMachine):
       # no state transitions for this class, get key messages and send authorize messages
       ev = yield
       if ev['event'] == 'VALID_KEY':
-        username = ev['username']
-        self.v.set('Last username: {}'.format(username))
-        if not os.path.isfile('./TTS/'+username+'.mp3'):
+        username = [ev['username'], ev['username'].replace(' ', '_')]
+        self.v.set('Last username: {}'.format(username[0]))
+        if not os.path.isfile('./TTS/'+username[1]+'.mp3'):
         	self.log.info('generating mp3...')
-        	tts = gTTS(text='Welcome {}.'.format(username), lang='en')
-        	tts.save(username+'.mp3')
+        	tts = gTTS(text='Welcome {}.'.format(username[0]), lang='en')
+        	tts.save(username[1]+'.mp3')
         	if not os.path.exists('TTS'):
-        		self.log.info('no TTS dir., creating one')
+        		self.log.info('no TTS dir, creating one')
         		os.makedirs('TTS')
-        	os.rename('./'+username+'.mp3', './TTS/'+username+'.mp3')
-        player = vlc.MediaPlayer('./TTS/'+username+'.mp3')
+        	os.rename('./'+username[1]+'.mp3', './TTS/'+username[1]+'.mp3')
+        player = vlc.MediaPlayer('./TTS/'+username[1]+'.mp3')
         player.play()
 
         
