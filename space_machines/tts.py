@@ -18,15 +18,15 @@ class TextToSpeech(StateMachine):
       if ev['event'] == 'VALID_KEY':
         username = [ev['username'], ev['username'].replace(' ', '_')]
         self.v.set('Last username: {}'.format(username[0]))
-        if not os.path.isfile('./TTS/'+username[1]+'.mp3'):
+        if not os.path.isfile(os.path.join('TTS',username[1]+'.mp3')):
         	self.log.info('generating mp3...')
         	tts = gTTS(text='Welcome {}.'.format(username[0]), lang='en')
         	tts.save(username[1]+'.mp3')
         	if not os.path.exists('TTS'):
         		self.log.info('no TTS dir, creating one')
         		os.makedirs('TTS')
-        	os.rename('./'+username[1]+'.mp3', './TTS/'+username[1]+'.mp3')
-        player = vlc.MediaPlayer('./TTS/'+username[1]+'.mp3')
+        	os.rename(username[1]+'.mp3', os.path.join('TTS',username[1]+'.mp3'))
+        player = vlc.MediaPlayer(os.path.join('TTS',username[1]+'.mp3'))
         player.play()
 
         
