@@ -13,10 +13,11 @@ class Greeter(StateMachine):
       # no state transitions for this class, get key messages and send authorize messages
       ev = yield
       if ev['event'] == 'VALID_KEY':
-        username = [ev['username'], ev['username'].replace(' ', '_')]
-        self.v.set('Last username: {}'.format(username[0]))
-        greeting = TextToSpeech()
-        greeting.say(text='Welcome {}.'.format(username[0]), fname=username[1], location='usergreetings', remove=False)
+        self.username = ev['username']
+        self.cleanName = self.username.replace(' ', '_')
+        self.m.set("'Welcome {0}.'".format(self.username))
+        self.greeting = TextToSpeech()
+        self.greeting.say(text='Welcome {0}.'.format(self.username), fname=self.cleanName, location='usergreetings', remove=False)
 
   def setup(self, out_queue, name):
     self.log = logging.getLogger('Greeter')
@@ -30,10 +31,12 @@ class Greeter(StateMachine):
     # Set up the GUI part
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
-    self.v = StringVar()
-    self.v.set('')
-    w = Label(frame, textvariable=self.v)
-    w.pack(side=LEFT)
+    self.m = StringVar()
+    self.m.set('')
+    lm1 = Label(frame, text="message:")
+    lm1.pack(side=LEFT)
+    lm2 = Label(frame, textvariable=self.m)
+    lm2.pack(side=LEFT)
 
 def main():
   out_queue = Queue.Queue()
