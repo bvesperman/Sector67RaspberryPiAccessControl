@@ -1,63 +1,28 @@
 import logging
-import time
-import Queue
-import threading
 import os.path
-
 import vlc
 from gtts import gTTS
-from Tkinter import *
-from pystates import StateMachine
 
 
-class TextToSpeech(StateMachine):
-  def WAITING(self):
-    while True:
-      # no state transitions for this class, get key messages and send authorize messages
-      ev = yield
-      if ev['event'] == 'VALID_KEY':
-        username = [ev['username'], ev['username'].replace(' ', '_')]
-        self.v.set('Last username: {}'.format(username[0]))
-        if not os.path.isfile(os.path.join('TTS',username[1]+'.mp3')):
-        	self.log.info('generating mp3...')
-        	tts = gTTS(text='Welcome {}.'.format(username[0]), lang='en')
-        	tts.save(username[1]+'.mp3')
-        	if not os.path.exists('TTS'):
-        		self.log.info('no TTS dir, creating one')
-        		os.makedirs('TTS')
-        	os.rename(username[1]+'.mp3', os.path.join('TTS',username[1]+'.mp3'))
-        player = vlc.MediaPlayer(os.path.join('TTS',username[1]+'.mp3'))
-        player.play()
-
-        
-
-  def setup(self, out_queue, name):
-    self.log = logging.getLogger('TextToSpeech')
-    self.out_queue = out_queue
-    self.name = name
-
-  def start(self):
-    super(TextToSpeech, self).start(self.WAITING)
-
-  def config_gui(self, root):
-    # Set up the GUI part
-    frame = LabelFrame(root, text=self.name, padx=5, pady=5)
-    frame.pack(fill=X)
-    self.v = StringVar()
-    self.v.set('')
-    w = Label(frame, textvariable=self.v)
-    w.pack(side=LEFT)
-
-def main():
-  out_queue = Queue.Queue()
-  logging.basicConfig(level=logging.DEBUG)
-  name = 'TextToSpeech'
-  machine = TextToSpeech(name=name)
-  machine.setup(out_queue, name=name)
-  machine.generate_message({'event': 'VALID_KEY', 'key': '', 'username': 'unknown'})
-  machine.start()
-
-  time.sleep(15)
-
-if __name__=='__main__':
-  main()
+class TextToSpeech():
+  def __init__(self):
+    self.log = logging.getLogger('TTS')
+  def say(self, text='', fname='tts_temp', location=os.curdir, lang='en', remove=True):
+    fpath = os.path.join(location,fname+'.mp3')
+    if not os.path.isfile(fpath):
+      self.log.info('file '+fname+'.mp3 not in '+location+', creating file')
+      tts = gTTS(text=text, lang=lang)
+      tts.save(fname+'.mp3')
+      self.log.info(fname+'.mp3 created')
+      if not os.path.exists(location):
+        self.log.info('no {0} dir; creating dir'.format(location))
+        os.makedirs(location)
+      os.rename(fname+'.mp3', fpath)
+      self.log.info(fname+'.mp3 moved to '+location)
+    else:
+      self.log.info("playing existing '"+fname+".mp3' in "+location)
+    player = vlc.MediaPlayer(fpath)
+    player.play()
+    if remove:
+      os.remove(fpath)
+      self.log.info('removed'+fpath)
