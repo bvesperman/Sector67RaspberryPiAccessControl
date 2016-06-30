@@ -2,7 +2,7 @@ import logging
 import time
 import Queue
 import threading
-
+import random
 from Tkinter import *
 
 from pystates import StateMachine
@@ -15,10 +15,9 @@ class NaiveAuthorizer(StateMachine):
       ev = yield
       if ev['event'] == "KEY_READ":
         key = ev['key']
-        username = "unknown"
+        username = self.e.get() or "unknown"
         self.log.debug('attempting to authorize key [' + key + ']')
-        isvalid = True
-        if isvalid:
+        if self.isvalid.get():
             message = {"event": "VALID_KEY", "key": key, "username": username}
             self.logger.debug("generating message: " + str(message))
             self.generate_message(message)
@@ -39,10 +38,16 @@ class NaiveAuthorizer(StateMachine):
     # Set up the GUI part
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
-    self.v = StringVar()
-    self.v.set("AUTHORIZER")
-    w = Label(frame, textvariable=self.v)
-    w.pack(side=LEFT)
+    
+    lu1 = Label(frame, text='username:')
+    lu1.pack(side=LEFT)
+    self.e = Entry(frame)
+    self.e.pack(side=LEFT)
+
+    self.isvalid = IntVar()
+    c = Checkbutton(frame, text='isvalid', variable=self.isvalid)
+    c.select()
+    c.pack(side=LEFT)
 
 def main():
   out_queue = Queue.Queue()

@@ -1,6 +1,9 @@
-sudo pip install /opt/Sector67RaspberryPiAccessControl/requirements.txt
-rm -rf /opt/Sector67RaspberryPiAccessControl
-cd /opt
-git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
-cd /opt/Sector67RaspberryPiAccessControl/space_machines
-python main.py rpi-machine.conf
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+PYTHON=$(which python)
+#sudo apt-get install python-dev
+#sudo $PYTHON -m pip install -r $DIR/../requirements.txt
+#rm -rf $DIR/../../Sector67RaspberryPiAccessControl
+#git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
+cd $DIR/../space_machines
+#exec $PYTHON $DIR/../space_machines/main.py $DIR/../space-machines/rpi-machine.conf "$@" 
+$PYTHON main.py rpi-machine.conf
