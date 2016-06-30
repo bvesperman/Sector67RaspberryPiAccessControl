@@ -16,7 +16,7 @@ setup(
     description='Controlling or interfacing with simple machines from a Raspberry Pi.',
     long_description=open('README.md').read(),
     install_requires=[
-        #"RPi.GPIO",
+        "RPi.GPIO",
         "rpi_ws281x",
         "expiringdict",
         "suds",
