@@ -5,7 +5,8 @@ import threading
 import sys
 from Tkinter import *
 from pystates import StateMachine
-from neopixel import * #-----I double hashtagged code i disabled relating to this.
+if sys.platform=='linux2':
+  from neopixel import *
 import math
 import random
 
@@ -325,7 +326,8 @@ class BlinkenLights(StateMachine):
     self.stuck_open_timeout = int(stuck_open_timeout)
     self.state = NullClass()
     # Create NeoPixel object with appropriate configuration.
-    self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
+    if sys.platform=='linux2':
+      self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
     #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
 
 

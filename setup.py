@@ -1,3 +1,4 @@
+from sys import platform
 try:
     from setuptools import setup
 except ImportError:
@@ -16,12 +17,12 @@ setup(
     description='Controlling or interfacing with simple machines from a Raspberry Pi.',
     long_description=open('README.md').read(),
     install_requires=[
-        "RPi.GPIO",
-        "rpi_ws281x",
-        "expiringdict",
-        "suds",
-        "python-vlc",
-        "gTTS"
+        'RPi.GPIO' if platform=='linux2' else '',
+        'rpi_ws281x' if platform=='linux2' else '',
+        'expiringdict',
+        'suds',
+        'python_vlc',
+        'gTTS'
     ],
     #test_suite='nose.collector',
     #tests_require=['nose'],

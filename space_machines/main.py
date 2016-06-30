@@ -106,7 +106,10 @@ if show_gui:
   root = Tk()
   for machine in machines:
     logger.info("configuring gui " + str(machine))
-    machine.config_gui(root)
+    try:
+      machine.config_gui(root)
+    except AttributeError:
+      pass
   broker.config_gui(root)
 
 
