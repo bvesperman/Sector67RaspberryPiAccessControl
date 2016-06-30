@@ -137,9 +137,15 @@ class QuickChange:
     for j in range(iterations):
       for q in range(2):
         for i in range(0, self.strip.numPixels(), 2):
-          self.strip.setPixelColor(i+q, color1)
+          if q:
+            self.strip.setPixelColor(i, color1)
+          else:
+            self.strip.setPixelColor(i, color2)
         for i in range(1, self.strip.numPixels(), 2):
-          self.strip.setPixelColor(i+q, 0)
+          if q:
+            self.strip.setPixelColor(i, color2)
+          else:
+            self.strip.setPixelColor(i, color1)
         self.strip.show()
         time.sleep(self.wait_ms/1000.0)
         if self.next_func != self.curr_func:

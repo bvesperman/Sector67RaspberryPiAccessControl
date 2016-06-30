@@ -119,7 +119,7 @@ for machine in machines:
 logger.info("machine start completed")
 
 broker.start_thread()
-logger.info("broker started completed")
+logger.info("broker start completed")
 
 if show_gui: 
   root.mainloop()

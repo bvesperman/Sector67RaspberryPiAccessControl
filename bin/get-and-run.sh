@@ -1,4 +1,5 @@
-sudo pip install /opt/Sector67RaspberryPiAccessControl/requirements.txt
+sudo pip apt-get install python-dev
+sudo pip install -r /opt/Sector67RaspberryPiAccessControl/requirements.txt
 rm -rf /opt/Sector67RaspberryPiAccessControl
 cd /opt
 git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
