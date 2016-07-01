@@ -20,9 +20,9 @@ from pystates import StateMachine
 class GuiAuthorizer(StateMachine):
 
   #self explanatory, really. Useful only for displaying the username or account information, not for regular authorization checking.
-  def getUserByRFID(self, rfid): 
+  def getUserByRFID(self, key): 
     try:
-      decimal_id = int(rfid, 16)& 0x00FFFFFFFF
+      decimal_id = key
       response = test_keys[decimal_id]
       return response  #result
     except Exception as e:
@@ -30,7 +30,7 @@ class GuiAuthorizer(StateMachine):
       return {"status": "error"}
 
   #does this RFID user have access to this machine? Binary result, and we really don't care why it failed.
-  def isRFIDAuthorized(self, rfid):
+  def isRFIDAuthorized(self, key):
     if self.isvalid.get():
       return True
     else:
