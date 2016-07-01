@@ -13,11 +13,11 @@ class Greeter(StateMachine):
       # no state transitions for this class, get key messages and send authorize messages
       ev = yield
       if ev['event'] == 'VALID_KEY':
-        self.username = ev['username']
-        self.cleanName = self.username.replace(' ', '_')
-        self.m.set("'Welcome {0}.'".format(self.username))
+        self.display_name = ev['display_name'] or 'to sector 67'#--default message: 'Welcome to sector 67.'
+        self.user_login = ev['user_login'] or self.display_name
+        self.m.set("'Welcome {0}.'".format(self.display_name))
         self.greeting = TextToSpeech()
-        self.greeting.say(text='Welcome {0}.'.format(self.username), fname=self.cleanName, location='usergreetings', remove=False)
+        self.greeting.say(text='Welcome {0}.'.format(self.display_name), fname=self.user_login, location='usergreetings', remove=False)
 
   def setup(self, out_queue, name):
     self.log = logging.getLogger('Greeter')
@@ -44,7 +44,7 @@ def main():
   name = 'Greeter'
   machine = Greeter(name=name)
   machine.setup(out_queue, name=name)
-  machine.generate_message({'event': 'VALID_KEY', 'key': '', 'username': 'unknown'})
+  machine.generate_message({'event': 'VALID_KEY', 'key': '', 'display_name': 'unknown'})
   machine.start()
 
   time.sleep(15)
