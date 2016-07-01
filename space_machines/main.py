@@ -106,10 +106,7 @@ if show_gui:
   root = Tk()
   for machine in machines:
     logger.info("configuring gui " + str(machine))
-    try:
-      machine.config_gui(root)
-    except AttributeError:
-      pass
+    machine.config_gui(root)
   broker.config_gui(root)
 
 
@@ -122,7 +119,7 @@ for machine in machines:
 logger.info("machine start completed")
 
 broker.start_thread()
-logger.info("broker start completed")
+logger.info("broker started completed")
 
 if show_gui: 
   root.mainloop()
