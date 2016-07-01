@@ -13,8 +13,7 @@ class GuiRfidReader(StateMachine):
   def READING(self):
     while True:
       # no state transitions for this class, read keys and send messages
-      while True:
-        ev = yield
+      ev = yield
 
   def setup(self, out_queue, name):
     self.log = logging.getLogger("GuiRfidReader")
