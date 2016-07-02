@@ -4,7 +4,7 @@ import Queue
 import threading
 
 test_keys = {
-  7899246 : {"status":"ok","message":{"user_login":"JSmith","ID":"89076543","display_name":"Johnny","account_balance":"12.78"}},
+  7899246 : {"status":"ok","message":{"user_login":"JSmith","ID":"89076543","display_name":"Johnny","account_balance":"12.78"}},# format that the url responds with
   #"" : {"status":"ok","message":{"user_login":"","ID":"","display_name":"","account_balance":""}},
   #"" : {"status":"ok","message":{"user_login":"","ID":"","display_name":"","account_balance":""}},
   #"" : {"status":"ok","message":{"user_login":"","ID":"","display_name":"","account_balance":""}},
@@ -22,8 +22,7 @@ class GuiAuthorizer(StateMachine):
   #self explanatory, really. Useful only for displaying the username or account information, not for regular authorization checking.
   def getUserByRFID(self, key): 
     try:
-      decimal_id = key
-      response = test_keys[decimal_id]
+      response = test_keys[key]
       return response  #result
     except Exception as e:
       self.log.info("Error encountered during authorization {0}".format(str(e)))
@@ -42,11 +41,11 @@ class GuiAuthorizer(StateMachine):
       ev = yield
       if ev['event'] == "KEY_READ":
         key = ev['key']
-        user_login = "UNKNOWN"
-        id = "UNKNOWN"
-        display_name = "UNKNOWN"
-        account_balance = "UNKNOWN"
-        self.log.debug('attempting to authorize key [' + key + ']')
+        user_login = ''
+        id = ''
+        display_name = ''
+        account_balance = ''
+        self.log.debug("attempting to authorize key [{0}]".format(key))
         userdata = self.getUserByRFID(key)
         if "message" in userdata:
           if "user_login" in userdata["message"]:
@@ -59,7 +58,7 @@ class GuiAuthorizer(StateMachine):
             account_balance = str(userdata["message"]["account_balance"]) 
         is_authorized = self.isRFIDAuthorized(key)
         if is_authorized:
-          self.log.info("key [" + key + "] was authorized as user [" + user_login + "]")
+          self.log.info("key [{0}] was authorized as user [".format(key) + user_login + "]")
           message = {"event": "VALID_KEY", "key": key, "user_login": user_login, "id": id, "display_name": display_name, "account_balance": account_balance}
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)
