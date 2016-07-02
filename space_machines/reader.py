@@ -29,7 +29,7 @@ class SerialRfidReader(StateMachine):
               self.log.debug("read key KEY_READ [" + key + "]")
               break
           # clear all extra input
-          key = key.strip()
+          key = key.strip('\\x')
           if key == "":
             break 
           if self.cache.get(key) == key:
@@ -37,7 +37,7 @@ class SerialRfidReader(StateMachine):
             break 
           #attempt to parse the key in the same manner as downstream
           decimal_id = int(key, 16)& 0x00FFFFFFFF
-          message = {"event": "KEY_READ", "key": key}
+          message = {"event": "KEY_READ", "key": decimal_id}
           self.cache[key] = key
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)
