@@ -47,7 +47,7 @@ class GuiAuthorizer(StateMachine):
         account_balance = ''
         self.log.debug("attempting to authorize key [{0}]".format(key))
         userdata = self.getUserByRFID(key)
-        if "message" in userdata:
+        if 'status' in userdata and userdata['status'] == 'ok' and "message" in userdata:
           if "user_login" in userdata["message"]:
             user_login = str(userdata["message"]["user_login"]) 
           if "ID" in userdata["message"]:
@@ -55,8 +55,14 @@ class GuiAuthorizer(StateMachine):
           if "display_name" in userdata["message"]:
             display_name = str(userdata["message"]["display_name"]) 
           if "account_balance" in userdata["message"]:
-            account_balance = str(userdata["message"]["account_balance"]) 
+            account_balance = str(userdata["message"]["account_balance"])
+        else:
+         user_login = self.eul.get()
+         id = self.eid.get()
+         display_name = self.edn.get()
+         account_balance = self.eab.get()
         is_authorized = self.isRFIDAuthorized(key)
+
         if is_authorized:
           self.log.info("key [{0}] was authorized as user [".format(key) + user_login + "]")
           message = {"event": "VALID_KEY", "key": key, "user_login": user_login, "id": id, "display_name": display_name, "account_balance": account_balance}
@@ -82,6 +88,31 @@ class GuiAuthorizer(StateMachine):
     # Set up the GUI part
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
+
+    lul = Label(frame, text='user_login:')
+    lul.pack(side=LEFT)
+    self.eul = Entry(frame, width=10)
+    self.eul.insert(0, "Unknown")
+    self.eul.pack(side=LEFT)
+
+    lid = Label(frame, text='id:')
+    lid.pack(side=LEFT)
+    self.eid = Entry(frame, width=10)
+    self.eid.insert(0, "0000000000")
+    self.eid.pack(side=LEFT)
+
+    ldn = Label(frame, text='display_name:')
+    ldn.pack(side=LEFT)
+    self.edn = Entry(frame, width=10)
+    self.edn.insert(0, "Unknown")
+    self.edn.pack(side=LEFT)
+
+    lab = Label(frame, text='account_balance:$')
+    lab.pack(side=LEFT)
+    self.eab = Entry(frame, width=5)
+    self.eab.insert(0, "0.00")
+    self.eab.pack(side=LEFT)
+
     self.isvalid = IntVar()
     c = Checkbutton(frame, text='isvalid', variable=self.isvalid)
     c.select()

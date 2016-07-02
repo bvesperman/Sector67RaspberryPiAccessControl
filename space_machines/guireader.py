@@ -30,7 +30,8 @@ class GuiRfidReader(StateMachine):
     # Set up the GUI part
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
-    self.e = Entry(frame)
+    self.e = Entry(frame, width=15)
+    self.e.insert(0, "0001234567")
     self.e.pack(side=LEFT)
     b = Button(frame, text="read", width=10, command=self.read)
     b.pack(side=LEFT)
