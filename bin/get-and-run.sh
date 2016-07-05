@@ -14,11 +14,14 @@ fi
 rm -rf $DIR/Sector67RaspberryPiAccessControl
 
 git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
-sudo python -m pip uninstall Sector67RaspberryPiAccessControl
-sudo python -m pip install Sector67RaspberryPiAccessControl
+#cd $DIR/Sector67RaspberryPiAccessControl
+#git checkout Better-dependencies
+cd $DIR
+sudo python -m pip uninstall $DIR/Sector67RaspberryPiAccessControl
+sudo python -m pip install $DIR/Sector67RaspberryPiAccessControl
 
 cd $DIR/Sector67RaspberryPiAccessControl/space_machines/
-if isRPi; then
+if $isRPi; then
 	python main.py rpi-machine.conf
 else
 	python main.py machine.conf
