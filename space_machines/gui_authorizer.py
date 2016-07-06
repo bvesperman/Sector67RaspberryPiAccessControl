@@ -63,7 +63,7 @@ class GuiAuthorizer(StateMachine):
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)
         else:
-          self.log.info("key [" + key + "] was not authorized as user [" + user_login + "]")
+          self.log.info("key [{0}] was not authorized as user [".format(key) + user_login + "]")
           message = {"event": "INVALID_KEY", "key": key, "user_login": user_login, "id": id, "display_name": display_name, "account_balance": account_balance}
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)
