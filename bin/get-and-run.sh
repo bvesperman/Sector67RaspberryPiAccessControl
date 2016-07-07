@@ -1,10 +1,11 @@
+#!/bin/bash
 cd ../..
 DIR=$(pwd)
 MAIN=$DIR/Sector67RaspberryPiAccessControl/space_machines/main.py
 os="Linux raspberrypi"
 kernalinfo=$(uname -a)
 if [[ "$kernalinfo" =~ "$os" ]]; then
-	isRPi=True
+	isRPi='True'
     echo "OS is $os, running apt-get"
     sudo apt-get install python-dev
 	sudo apt-get install vlc
@@ -16,7 +17,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	sudo systemctl enable space_machines.service
 	sudo systemctl disable serial-getty@ttyAMA0.service #disable serial TTY
 else
-	isRPi=False
+	isRPi='False'
     echo "OS is not $os, vlc might need to be installed manually."
 fi
 rm -rf $DIR/Sector67RaspberryPiAccessControl
@@ -28,7 +29,7 @@ cd $DIR/Sector67RaspberryPiAccessControl
 sudo python -m pip uninstall $DIR/Sector67RaspberryPiAccessControl
 sudo python -m pip install $DIR/Sector67RaspberryPiAccessControl
 
-if [ $isRPi == True ]; then
+if [ $isRPi == 'True' ]; then
 	python $MAIN rpi-machine.conf
 else
 	python $MAIN machine.conf
