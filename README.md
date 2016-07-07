@@ -23,31 +23,12 @@ Since this project is designed for use on a Raspberry Pi, Pi-specific setup inst
 
 TODO, finish documentation: 
 ## change the host name
-## disable serial TTY
-Good instructions at:
-http://elinux.org/RPi_Serial_Connection
-however, later systems use systemd instead of inittab, so run:
-sudo systemctl disable serial-getty@ttyAMA0.service
-## disable screen saver
-## download and install state_machine and any dependencies
-## script state_machine startup on reboot
-With the latest raspian it is simplest to use systemd:
-
-sudo cp space_machines.service /lib/systemd/system/space_machines.service
-sudo chmod 644 /lib/systemd/system/space_machines.service
-sudo systemctl daemon-reload
-sudo systemctl enable myscript.service
-sudo systemctl status myscript.service
 
 
 ## install the dependencies
-To install the python-dev dependency, you can run:
+To install the dependencies, you can run:
 
-	sudo apt-get install python-dev
-
-To install the other dependencies for the raspberry pi, you can run:
-
-    sudo pip install [location of the directory]/Sector67RaspberryPiAccessControl/requirements.txt
+    [location of the directory]/Sector67RaspberryPiAccessControl/bin/get-and-run.sh
 
 this will install the necessary native libraries and python modules.  Code using the neopixel library must be run as root.
 
