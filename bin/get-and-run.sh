@@ -5,7 +5,7 @@ os="Linux raspberrypi"
 kernalinfo=$(uname -a)
 if [[ "$kernalinfo" =~ "$os" ]]; then
 	isRPi=True
-    echo "OS is Linux2, running apt-get"
+    echo "OS is $os, running apt-get"
     sudo apt-get install python-dev
 	sudo apt-get install vlc
 	sed -i.backup 's|.*BLANK_TIME=.*|BLANK_TIME=0|; s|.*BLANK_DPMS=.*|BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
@@ -17,7 +17,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	sudo systemctl disable serial-getty@ttyAMA0.service #disable serial TTY
 else
 	isRPi=False
-    echo "OS is not Linux2, vlc might need to be installed manually."
+    echo "OS is not $os, vlc might need to be installed manually."
 fi
 rm -rf $DIR/Sector67RaspberryPiAccessControl
 
