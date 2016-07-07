@@ -1,7 +1,7 @@
 cd ../..
 DIR=$(pwd)
 MAIN=$DIR/Sector67RaspberryPiAccessControl/space_machines/main.py
-os="Linux2"
+os="Linux raspberrypi"
 kernalinfo=$(uname -a)
 if [[ "$kernalinfo" =~ "$os" ]]; then
 	isRPi=True
@@ -28,7 +28,7 @@ cd $DIR/Sector67RaspberryPiAccessControl
 sudo python -m pip uninstall $DIR/Sector67RaspberryPiAccessControl
 sudo python -m pip install $DIR/Sector67RaspberryPiAccessControl
 
-if $isRPi; then
+if [ $isRPi == True ]; then
 	python $MAIN rpi-machine.conf
 else
 	python $MAIN machine.conf
