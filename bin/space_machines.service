@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=python #FILEPATH# #CONFPATH#
+ExecStart=#PYTHONPATH# #FILEPATH# #CONFPATH#
 
 [Install]
 WantedBy=multi-user.target
