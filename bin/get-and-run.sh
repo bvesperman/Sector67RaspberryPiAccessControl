@@ -1,6 +1,7 @@
 #!/bin/bash
 cd ..
 sudo rm -rf $(pwd)
+cd ..
 sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 cd Sector67RaspberryPiAccessControl
 DIR=$(pwd)
