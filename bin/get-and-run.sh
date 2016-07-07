@@ -1,5 +1,8 @@
 #!/bin/bash
 cd ..
+rm -rf ./
+git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
+cd Sector67RaspberryPiAccessControl
 DIR=$(pwd)
 os="Linux raspberrypi"
 MAIN=$DIR/space_machines/main.py
@@ -20,9 +23,6 @@ else
     echo "OS is not $os, vlc might need to be installed manually."
 	isRPi=false
 fi
-rm -rf $DIR
-
-git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 #cd $DIR
 #git checkout Better-dependencies
 cd $DIR
