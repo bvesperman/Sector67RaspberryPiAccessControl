@@ -4,6 +4,7 @@ sudo rm -rf $(pwd)
 cd ..
 sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 cd Sector67RaspberryPiAccessControl
+git checkout pseudo-master
 DIR=$(pwd)
 START=$DIR/bin/start.sh
 PYTHON=$(which python)
@@ -30,8 +31,6 @@ else
 	isRPi=false
 	CONF=$DIR/space_machines/machine.conf
 fi
-#cd $DIR
-#git checkout Better-dependencies
 cd $DIR
 sudo $PYTHON -m pip uninstall $DIR
 sudo $PYTHON -m pip install $DIR
