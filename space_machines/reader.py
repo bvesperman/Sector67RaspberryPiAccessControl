@@ -29,6 +29,7 @@ class SerialRfidReader(StateMachine):
               self.log.debug("read key KEY_READ [" + key + "]")
               break
           # clear all extra input
+          key = key.strip()
           key = key.strip('\\x')
           if key == "":
             break 

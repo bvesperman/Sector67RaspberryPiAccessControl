@@ -37,7 +37,7 @@ class GuiRfidReader(StateMachine):
     b.pack(side=LEFT)
 
   def read(self):
-    key = int(self.e.get().strip())
+    key = int(self.e.get().strip() or 0)
     message = {"event": "KEY_READ", "key": key}
     self.logger.debug("generating message: " + str(message))
     self.generate_message(message)
