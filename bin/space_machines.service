@@ -1,0 +1,10 @@
+[Unit]
+Description=Sector67 Access Control
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=python #FILEPATH# #CONFPATH#
+
+[Install]
+WantedBy=multi-user.target

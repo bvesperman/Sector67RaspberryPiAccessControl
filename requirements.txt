@@ -1,6 +1,0 @@
-RPi.GPIO
-rpi_ws281x
-expiringdict
-suds
-python-vlc
-gTTS
