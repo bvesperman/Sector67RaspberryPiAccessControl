@@ -7,6 +7,7 @@ cd Sector67RaspberryPiAccessControl
 git checkout pseudo-master
 DIR=$(pwd)
 START=$DIR/bin/start.sh
+sudo chmod 755 $START
 PYTHON=$(which python)
 os='Linux raspberrypi'
 MAIN=$DIR/space_machines/main.py
