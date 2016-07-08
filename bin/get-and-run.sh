@@ -7,6 +7,7 @@ cd Sector67RaspberryPiAccessControl
 git checkout pseudo-master
 DIR=$(pwd)
 START=$DIR/bin/start.sh
+LOG=$DIR/space_machines/logging.conf
 sudo chmod 755 $START
 PYTHON=$(which python)
 os='Linux raspberrypi'
@@ -35,4 +36,4 @@ cd $DIR
 sudo $PYTHON -m pip uninstall $DIR
 sudo $PYTHON -m pip install $DIR
 
-sudo $START
+sudo $START $CONF $LOG
