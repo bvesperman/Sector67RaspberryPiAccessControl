@@ -53,7 +53,7 @@ class MessageThread:
 # Determine the configuration file to read
 
 config_file_name='machine.conf'
-if len(sys.argv) == 2:
+if len(sys.argv) >= 2:
    config_file_name = sys.argv[1]
 
 # Read the configuration file
