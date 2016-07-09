@@ -4,7 +4,6 @@ After=multi-user.target
 
 [Service]
 Type=forking
-PIDfile=#PIDPATH#
 ExecStart=#STARTPATH#
 
 [Install]
