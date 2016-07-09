@@ -3,7 +3,8 @@ Description=Sector67 Access Control
 After=multi-user.target
 
 [Service]
-Type=idle
+Type=forking
+PIDfile=#PIDPATH#
 ExecStart=#STARTPATH#
 
 [Install]
