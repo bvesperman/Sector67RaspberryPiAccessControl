@@ -25,8 +25,9 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	sudo chmod 644 /lib/systemd/system/space_machines.service
 	sudo systemctl daemon-reload
 	sudo systemctl enable space_machines.service
-	#sudo systemctl enable space_machines.service
-	sudo systemctl disable serial-getty@ttyAMA0.service #disable serial TTY
+	sudo systemctl stop serial-getty@ttyAMA0.service # terminates, disables, and keeps disabled serial TTY
+	sudo systemctl disable serial-getty@ttyAMA0.service
+	sudo systemctl mask serial-getty@ttyAMA0.service
 else
 	echo "OS is not $os, vlc might need to be installed manually."
 	isRPi=false
