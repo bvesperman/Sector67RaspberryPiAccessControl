@@ -15,7 +15,10 @@ class Greeter(StateMachine):
       if ev['event'] == 'VALID_KEY':
         self.display_name = ev['display_name'] or 'to sector 67'#--default message: 'Welcome to sector 67.'
         self.user_login = ev['user_login'] or self.display_name
-        self.m.set("'Welcome {0}.'".format(self.display_name))
+        try:
+          self.m.set("'Welcome {0}.'".format(self.display_name))
+        except AttributeError:
+          pass
         self.greeting = TextToSpeech()
         self.greeting.say(text='Welcome {0}.'.format(self.display_name), fname=self.user_login, location='usergreetings', remove=False)
 
