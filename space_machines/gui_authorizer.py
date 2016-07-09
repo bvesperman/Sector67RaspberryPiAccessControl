@@ -30,10 +30,13 @@ class GuiAuthorizer(StateMachine):
 
   #does this RFID user have access to this machine? Binary result, and we really don't care why it failed.
   def isRFIDAuthorized(self, key):
-    if (self.isvalid and self.isvalid.get()) or not self.isvalid:
+    try:
+      if self.isvalid.get():
+        return True
+      else:
+        return False
+    except AttributeError:
       return True
-    else:
-      return False
 
   def WAITING(self):
     while True:
