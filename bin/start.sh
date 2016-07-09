@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #PYTHONPATH# #FILEPATH# #CONFPATH# #LOGPATH# &
 PID=$!
-PID > #PIDPATH#
+$PID > #PIDPATH#
