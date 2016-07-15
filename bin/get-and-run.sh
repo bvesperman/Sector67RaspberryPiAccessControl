@@ -45,4 +45,8 @@ cd $DIR
 sudo $PYTHON -m pip uninstall $DIR
 sudo $PYTHON -m pip install $DIR
 
-sudo $START
+if [[ "$kernalinfo" =~ "$os" ]]; then
+	sudo systemctl start space_machines.service
+else
+	sudo $START
+fi
