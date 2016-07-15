@@ -6,17 +6,22 @@ sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.gi
 cd Sector67RaspberryPiAccessControl
 git checkout pseudo-master
 DIR=$(pwd)
-START=$DIR/bin/start.sh
-LOG=$DIR/space_machines/logging.conf
-sudo chmod 755 $START
+STARTNAME=s_m_start.sh
+LOGNAME=s_m_logging.conf
 PYTHON=$(which python)
 os='Linux raspberrypi'
 MAIN=$DIR/space_machines/main.py
 kernalinfo=$(uname -a)
+sudo chmod u+x $DIR/bin/$STARTNAME
 if [[ "$kernalinfo" =~ "$os" ]]; then
 	echo "OS is $os, performing additional setup."
 	isRPi=true
-	CONF=$DIR/space_machines/rpi-machine.conf
+	CONFNAME=rpi-machine.conf
+	cp $DIR/space_machines/*.conf /etc #copy config files to /etc
+	CONF=/etc/$CONFNAME
+	LOG=/etc/$LOGNAME
+	cp $DIR/bin/$STARTNAME /usr/local/bin
+	START=/usr/bin/$STARTNAME
 	sudo apt-get install python-dev vlc
 	sudo sed -i.backup 's|.*BLANK_TIME=.*|BLANK_TIME=0|; s|.*BLANK_DPMS=.*|BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
 	sudo sed -i.backup "s|#PYTHONPATH#|$PYTHON|; s|#FILEPATH#|$MAIN|; s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file
@@ -31,10 +36,13 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 else
 	echo "OS is not $os, no additional setup performed."
 	isRPi=false
-	CONF=$DIR/space_machines/machine.conf
+	CONFNAME=machine.conf
+	LOG=$DIR/space_machines/$LOGNAME
+	START=$DIR/bin/$STARTNAME
+	CONF=$DIR/space_machines/$CONFNAME
 fi
 cd $DIR
 sudo $PYTHON -m pip uninstall $DIR
 sudo $PYTHON -m pip install $DIR
 
-sudo $START $CONF $LOG
+sudo $START
