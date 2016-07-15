@@ -30,14 +30,14 @@ class GuiSwitch(StateMachine):
   def shouldBeOn(self):
     return self.state.get() or 0
 
-  def setup(self, out_queue, name, on_message, off_message, checkbutton_text='',selected=False):
+  def setup(self, out_queue, name, on_message, off_message, selected=False, checkbutton_text="ON/OFF"):
     self.logger = logging.getLogger("GuiSwitch")
     self.out_queue = out_queue
     self.name = name
     self.on_message = on_message
     self.off_message = off_message
     self.selected = bool(selected)
-    self.checkbutton_text=checkbutton_text
+    self.checkbutton_text = checkbutton_text
 
 
   """ Perform initialization here, detect the current state and send that
@@ -59,3 +59,5 @@ class GuiSwitch(StateMachine):
     if self.selected:
       c.select()
     c.pack(side=LEFT)
+
+
