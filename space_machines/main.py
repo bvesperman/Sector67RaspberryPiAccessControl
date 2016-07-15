@@ -84,7 +84,7 @@ for section in config.sections():
     logger.info("initializing " + section)
     classname = config.get(section, 'classname')
     module_name = config.get(section, 'module')
-    module = map(__import__, [module_name])
+    module = map(__import__, ['s_m_modules.' + module_name])
     logger.info("  machine class: " + classname)
     logger.info("  machine module: " + module_name)
     setup_params = {}
