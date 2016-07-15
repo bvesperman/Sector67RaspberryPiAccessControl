@@ -17,10 +17,10 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	echo "OS is $os, performing additional setup."
 	isRPi=true
 	CONFNAME=rpi-machine.conf
-	cp $DIR/space_machines/*.conf /etc #copy config files to /etc
+	sudo cp $DIR/space_machines/*.conf /etc #copy config files to /etc
 	CONF=/etc/$CONFNAME
 	LOG=/etc/$LOGNAME
-	cp $DIR/bin/$STARTNAME /usr/local/bin
+	sudo cp $DIR/bin/$STARTNAME /usr/local/bin
 	START=/usr/local/bin/$STARTNAME
 	sudo apt-get install python-dev vlc
 	sudo sed -i.backup 's|.*BLANK_TIME=.*|BLANK_TIME=0|; s|.*BLANK_DPMS=.*|BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
@@ -33,6 +33,9 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	sudo systemctl stop serial-getty@ttyAMA0.service # terminates, disables, and keeps disabled serial TTY
 	sudo systemctl disable serial-getty@ttyAMA0.service
 	sudo systemctl mask serial-getty@ttyAMA0.service
+
+
+	sudo cp $DIR/Documentation/asound.conf /etc
 else
 	echo "OS is not $os, no additional setup performed."
 	isRPi=false
