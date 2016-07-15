@@ -3,7 +3,6 @@ Description=Sector67 Access Control
 After=multi-user.target
 
 [Service]
-Type=forking
 ExecStart=#STARTPATH#
 
 [Install]
