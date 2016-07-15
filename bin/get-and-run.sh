@@ -33,9 +33,6 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	sudo systemctl stop serial-getty@ttyAMA0.service # terminates, disables, and keeps disabled serial TTY
 	sudo systemctl disable serial-getty@ttyAMA0.service
 	sudo systemctl mask serial-getty@ttyAMA0.service
-
-
-	sudo cp $DIR/Documentation/asound.conf /etc
 else
 	echo "OS is not $os, no additional setup performed."
 	isRPi=false
