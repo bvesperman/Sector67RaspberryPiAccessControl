@@ -64,7 +64,7 @@ if config.getboolean('Main', 'show_gui'):
   show_gui = True
 
 # Initialize logging
-log_file_name='logging.conf'
+log_file_name='s_m_logging.conf'
 if len(sys.argv) == 3:
    log_file_name = sys.argv[2]
 
