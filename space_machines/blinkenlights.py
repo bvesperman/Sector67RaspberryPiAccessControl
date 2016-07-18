@@ -374,7 +374,7 @@ class MockStrip:
       label.configure(bg=self.pending[i])
       i=i+1
 
-  def begin(self):
+  def begin(self):# mimicing neopixel;
     pass
 
   def setPixelColor(self, pixel, color):
