@@ -228,72 +228,48 @@ class QuickChange:
 
 class BlinkenLights(StateMachine):
 
-  def VALID_KEY(self):
-    self.state.set("VALID_KEY")
+  def MAIN_DOOR_UNLOCKING(self):
+    self.state.set("MAIN_DOOR_UNLOCKING")
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_OPENED":
-        self.transition(self.DOOR_OPENED)
-      if ev['event'] == "DOOR_CLOSED":
-        self.transition(self.WAITING)
-      if ev['event'] == "MAIN_DOOR_CLOSED_LOCKED":
-        self.transition(self.WAITING)
 
   def INVALID_KEY(self):
     self.state.set("INVALID_KEY")
     self.qc.set_next(self.qc.flash_colors_red_black)
-    while True:
-      ev = yield
-      if self.duration() > 2:
-        self.transition(self.WAITING)
+    time.sleep(2)
+    self.qc.set_next(self.qc.rainbow_cycle)
 
   def MAIN_DOOR_FORCED_OPEN(self):
     self.state.set("MAIN_DOOR_FORCED_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
-    #self.qc.set_next(self.qc.flash_colors_red_black)
-    while True:
-      ev = yield
-      if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)
 
-  def DOOR_OPENED(self):
+  def MAIN_DOOR_OPENED(self):
     self.state.set("DOOR_OPENED")
     self.qc.set_next(self.qc.fade_green_to_red)
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.transition(self.WAITING)
-      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
-        self.transition(self.MAIN_DOOR_STUCK_OPEN)
 
   def MAIN_DOOR_STUCK_OPEN(self):
-    self.state.set("DOOR_OPENED")
+    self.state.set("MAIN_DOOR_STUCK_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.transition(self.WAITING)
 
-  def WAITING(self):
-    self.state.set("WAITING")
+  def MAIN_DOOR_CLOSED(self):
+    self.state.set("MAIN_DOOR_CLOSED")
     self.qc.set_next(self.qc.rainbow_cycle)
+
+  def IDLE(self):
+    self.state.set("IDLE")
     while True:
       ev = yield
-      if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)
-      if ev['event'] == "INVALID_KEY":
-        self.transition(self.INVALID_KEY)
+      if ev['event'] == "MAIN_DOOR_CLOSED":
+        self.MAIN_DOOR_CLOSED()
+      if ev['event'] == "MAIN_DOOR_UNLOCKING":
+        self.MAIN_DOOR_UNLOCKING()
+      if ev['event'] == "MAIN_DOOR_OPENED":
+        self.MAIN_DOOR_OPENED()
       if ev['event'] == "MAIN_DOOR_FORCED_OPEN":
-        self.transition(self.MAIN_DOOR_FORCED_OPEN)
-      """if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)
-      if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)
-      if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)
-      if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)"""
+        self.MAIN_DOOR_FORCED_OPEN()
+      if ev['event'] == "INVALID_KEY":
+        self.INVALID_KEY()
+      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
+        self.MAIN_DOOR_STUCK_OPEN()
 
   def config_gui(self, root):
     # Set up the GUI part
@@ -345,7 +321,7 @@ class BlinkenLights(StateMachine):
     self.thread.setDaemon(True)
     self.thread.start()
     self.log.debug("thread started")
-    super(BlinkenLights, self).start(self.WAITING)
+    super(BlinkenLights, self).start(self.IDLE)
 
 
 class MockStrip:
@@ -374,7 +350,7 @@ class MockStrip:
       label.configure(bg=self.pending[i])
       i=i+1
 
-  def begin(self):
+  def begin(self):# mimicing neopixel;
     pass
 
   def setPixelColor(self, pixel, color):
@@ -400,7 +376,7 @@ def main():
   machine = BlinkenLights(name=name)
   machine.setup(out_queue, name=name, led_count=16, led_pin=18, led_freq_hz=800000, led_dma=5, led_invert="False", led_brightness=255, handle_pixel = 8, stuck_open_timeout = 15)
   machine.start()
-  machine.send_message({"event": "VALID_KEY"})
+  machine.send_message({"event": "MAIN_DOOR_UNLOCKING"})
 
   time.sleep(15)
 
