@@ -23,7 +23,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	sudo cp $DIR/bin/$STARTNAME /usr/local/bin
 	START=/usr/local/bin/$STARTNAME
 	sudo apt-get install python-dev vlc
-	sudo sed -i.backup 's|.*BLANK_TIME=.*|BLANK_TIME=0|; s|.*BLANK_DPMS=.*|BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
+	sudo sed -i.backup 's|.*BLANK_TIME=.*|#BLANK_TIME=0|; s|.*BLANK_DPMS=.*|#BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|#POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
 	sudo sed -i.backup "s|#PYTHONPATH#|$PYTHON|; s|#FILEPATH#|$MAIN|; s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file
 	sudo sed -i.backup "s|#STARTPATH#|$START|" $DIR/bin/space_machines.service # enters the start up file path into the service file
 	sudo cp $DIR/bin/space_machines.service /lib/systemd/system/space_machines.service #makes script run on boot
