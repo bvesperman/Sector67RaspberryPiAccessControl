@@ -51,10 +51,9 @@ class MessageThread:
         pass
 
 # Determine the configuration file to read
-import sys
 
 config_file_name='machine.conf'
-if len(sys.argv) == 2:
+if len(sys.argv) >= 2:
    config_file_name = sys.argv[1]
 
 # Read the configuration file
@@ -65,7 +64,11 @@ if config.getboolean('Main', 'show_gui'):
   show_gui = True
 
 # Initialize logging
-logging.config.fileConfig('logging.conf')
+log_file_name='s_m_logging.conf'
+if len(sys.argv) == 3:
+   log_file_name = sys.argv[2]
+
+logging.config.fileConfig(log_file_name)
 logger = logging.getLogger('main')
 
 # Read all machines in the config file and initialize them
