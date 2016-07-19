@@ -13,18 +13,9 @@ class DoorState(StateMachine):
       self.v.set(text)
       self.infoText = self.v
 
-  def FORCED(self):
-    self.generate_message({"event": self.name + "_FORCED_OPEN"})
-    while True:
-      ev = yield
-      self.track(ev)
-      if ev['event'] == "VALID_KEY":
-        if self.CLOSED:
-          self.transition(self.UNLOCKING)
-        else:
-          self.transition(self.IS_OPEN)
-
   def track(self,ev):
+    '''Tracks the state of the door, and updates the vars and display.
+    '''
     if ev['event'] == 'MAIN_DOOR_MODE_UNLOCKED':
       self.IN_LOCK_MODE = False
       self.log.debug('Door left lockmode')
@@ -44,6 +35,17 @@ class DoorState(StateMachine):
     if self.infoText != self.currentInfo:
       self.setInfoText(self.currentInfo)
 
+  def FORCED(self):
+    self.generate_message({"event": self.name + "_FORCED_OPEN"})
+    while True:
+      ev = yield
+      self.track(ev)
+      if ev['event'] == "VALID_KEY":
+        if self.CLOSED:
+          self.transition(self.UNLOCKING)
+        else:
+          self.transition(self.IS_OPEN)
+
   def CLOSED(self):
     self.generate_message({"event": self.name + "_CLOSED"})
     self.log.debug("turn off solenoid")
@@ -56,12 +58,12 @@ class DoorState(StateMachine):
       if self.IS_OPEN:
         if self.IN_LOCK_MODE:
           self.transition(self.FORCED)
-        self.transition(self.OPEN)
+        else:
+          self.transition(self.OPEN)
 
   def UNLOCKING(self):
     self.generate_message({"event": self.name + "_UNLOCKING", "timeout": self.unlock_timeout})
     self.log.debug("turn on solenoid")
-    #self.generate_message({"event": self.name + "_UNLOCK_DOOR"})
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
 
     while True:
