@@ -7,6 +7,7 @@ else
 	cd ..
 	sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 	cd Sector67RaspberryPiAccessControl
+fi
 git checkout pseudo-master
 DIR=$(pwd)
 STARTNAME=s_m_start.sh
