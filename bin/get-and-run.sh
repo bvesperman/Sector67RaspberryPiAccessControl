@@ -1,9 +1,12 @@
 #!/bin/bash
 cd ..
-sudo rm -rf $(pwd)
-cd ..
-sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
-cd Sector67RaspberryPiAccessControl
+if [ -e '.git' ]
+	then git pull
+else
+	sudo rm -rf $(pwd)
+	cd ..
+	sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
+	cd Sector67RaspberryPiAccessControl
 git checkout pseudo-master
 DIR=$(pwd)
 STARTNAME=s_m_start.sh
