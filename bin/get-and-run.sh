@@ -8,7 +8,6 @@ else
 	sudo git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 	cd Sector67RaspberryPiAccessControl
 fi
-git checkout pseudo-master
 DIR=$(pwd)
 os='Linux raspberrypi'
 MAIN=$DIR/space_machines/main.py
