@@ -1,2 +1,3 @@
 #!/bin/bash
 #PYTHONPATH# #FILEPATH# #CONFPATH# #LOGPATH#
+exit 0
