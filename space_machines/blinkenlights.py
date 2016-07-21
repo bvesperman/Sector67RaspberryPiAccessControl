@@ -224,69 +224,64 @@ class QuickChange:
 class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_UNLOCKING(self):
-    self.setGuiState("MAIN_DOOR_UNLOCKING")
+    self.set_gui_state("MAIN_DOOR_UNLOCKING")
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
 
   def INVALID_KEY(self):
-    self.setGuiState("INVALID_KEY")
+    self.set_gui_state("INVALID_KEY")
     self.qc.set_next(self.qc.flash_colors_red_black)
     time.sleep(2)
-    self.qc.set_next(self.qc.rainbow_cycle)
+    self.set_state(self.prev_state)
 
   def MAIN_DOOR_FORCED_OPEN(self):
-    self.setGuiState("MAIN_DOOR_FORCED_OPEN")
+    self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
 
   def MAIN_DOOR_OPENED(self):
-    self.setGuiState("DOOR_OPENED")
+    self.set_gui_state("DOOR_OPENED")
     self.qc.set_next(self.qc.fade_green_to_red)
 
   def MAIN_DOOR_STUCK_OPEN(self):
-    self.setGuiState("MAIN_DOOR_STUCK_OPEN")
+    self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
 
   def MAIN_DOOR_CLOSED(self):
-    self.setGuiState("MAIN_DOOR_CLOSED")
+    self.set_gui_state("MAIN_DOOR_CLOSED")
     self.qc.set_next(self.qc.rainbow_cycle)
 
   def IDLE(self):
-    self.setGuiState("IDLE")
+    self.set_gui_state("IDLE")
     while True:
       ev = yield
-      if ev['event'] == "MAIN_DOOR_CLOSED":
-        self.MAIN_DOOR_CLOSED()
-      if ev['event'] == "MAIN_DOOR_UNLOCKING":
-        self.MAIN_DOOR_UNLOCKING()
-      if ev['event'] == "MAIN_DOOR_OPENED":
-        self.MAIN_DOOR_OPENED()
-      if ev['event'] == "MAIN_DOOR_FORCED_OPEN":
-        self.MAIN_DOOR_FORCED_OPEN()
-      if ev['event'] == "INVALID_KEY":
-        self.INVALID_KEY()
-      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
-        self.MAIN_DOOR_STUCK_OPEN()
+      if ev['event'] ==    "MAIN_DOOR_CLOSED":
+        self.set_state(self.MAIN_DOOR_CLOSED)
+      if ev['event'] ==    "MAIN_DOOR_UNLOCKING":
+        self.set_state(self.MAIN_DOOR_UNLOCKING)
+      if ev['event'] ==    "MAIN_DOOR_OPENED":
+        self.set_state(self.MAIN_DOOR_OPENED)
+      if ev['event'] ==    "MAIN_DOOR_FORCED_OPEN":
+        self.set_state(self.MAIN_DOOR_FORCED_OPEN)
+      if ev['event'] ==    "INVALID_KEY":
+        self.set_state(self.INVALID_KEY)
+      if ev['event'] ==    "MAIN_DOOR_STUCK_OPEN":
+        self.set_state(self.MAIN_DOOR_STUCK_OPEN)
+      self.do_state()
 
-  def config_gui(self, root):
-    # Set up the GUI part
-    self.gui = True
-    frame = LabelFrame(root, text="STATE", padx=5, pady=5)
-    frame.pack(fill=X)
-    self.state = StringVar()
-    self.state.set("[STATE]")
-    label = Label(frame, textvariable = self.state)
-    label.pack(side=LEFT)
-    self.info_frame = frame
-    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5)
-    frame2.pack(fill=X)
-    self.wait_ms = 50
-    self.next_func = 1
-    self.curr_func = 1
-    self.strip = MockStrip(self.led_count, frame2)
-
-  def setGuiState(self, state):
+  def set_gui_state(self, state):
     if self.gui:
-      self.state.set(state)
+      self.gui_state.set(state)
 
+  def do_state(self):
+    if self.curr_state != self.state:
+      self.prev_state = self.state
+      self.state = self.curr_state
+      self.curr_state()
+
+  def get_state(self):
+    return self.state
+
+  def set_state(self, state):
+    self.curr_state = state
 
   def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel, stuck_open_timeout):
     self.log = logging.getLogger("BlinkenLights")
@@ -302,11 +297,30 @@ class BlinkenLights(StateMachine):
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     self.stuck_open_timeout = int(stuck_open_timeout)
     self.gui = False
+    self.state = None
+    self.prev_state = None
+    self.curr_state = None
     # Create NeoPixel object with appropriate configuration.
     if sys.platform=='linux2':
       self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
     #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
 
+  def config_gui(self, root):
+    # Set up the GUI part
+    self.gui = True
+    frame = LabelFrame(root, text="STATE", padx=5, pady=5)
+    frame.pack(fill=X)
+    self.gui_state = StringVar()
+    self.gui_state.set("[STATE]")
+    label = Label(frame, textvariable = self.gui_state)
+    label.pack(side=LEFT)
+    self.info_frame = frame
+    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5)
+    frame2.pack(fill=X)
+    self.wait_ms = 50
+    self.next_func = 1
+    self.curr_func = 1
+    self.strip = MockStrip(self.led_count, frame2)
 
   """ Perform initialization here, detect the current state and send that
       to the super class start.
