@@ -10,14 +10,9 @@ if sys.platform=='linux2':
 import math
 import random
 
-
-class NullClass:
-  def set(self,state):
-    pass
-
  
 class QuickChange:
-  def __init__(self, handle_pixel):
+  def __init__(self, handle_pixel=20):
     self.set_next(self.color_wipe_blue)
     self.curr_func = self.color_wipe_blue
     self.wait_ms = 50
@@ -36,7 +31,7 @@ class QuickChange:
     self.strip = strip
 
   def int_color(self, color):
-    """returns color to a truple of integers"""
+    """returns color as a truple of integers (R,G,B)."""
     return (int(bin(color)[2:].zfill(24)[:-16],2), int(bin(color)[2:].zfill(24)[-16:-8],2), int(bin(color)[2:].zfill(24)[-8:],2))
 
   def Color(self,red, green, blue):
@@ -229,7 +224,7 @@ class QuickChange:
 class BlinkenLights(StateMachine):
 
   def VALID_KEY(self):
-    self.state.set("VALID_KEY")
+    self.setGuiState("VALID_KEY")
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
     while True:
       ev = yield
@@ -241,7 +236,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.WAITING)
 
   def INVALID_KEY(self):
-    self.state.set("INVALID_KEY")
+    self.setGuiState("INVALID_KEY")
     self.qc.set_next(self.qc.flash_colors_red_black)
     while True:
       ev = yield
@@ -249,7 +244,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.WAITING)
 
   def MAIN_DOOR_FORCED_OPEN(self):
-    self.state.set("MAIN_DOOR_FORCED_OPEN")
+    self.setGuiState("MAIN_DOOR_FORCED_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
     #self.qc.set_next(self.qc.flash_colors_red_black)
     while True:
@@ -258,7 +253,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.VALID_KEY)
 
   def DOOR_OPENED(self):
-    self.state.set("DOOR_OPENED")
+    self.setGuiState("DOOR_OPENED")
     self.qc.set_next(self.qc.fade_green_to_red)
     while True:
       ev = yield
@@ -268,7 +263,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.MAIN_DOOR_STUCK_OPEN)
 
   def MAIN_DOOR_STUCK_OPEN(self):
-    self.state.set("DOOR_OPENED")
+    self.setGuiState("DOOR_OPENED")
     self.qc.set_next(self.qc.flash_colors_red_black)
     while True:
       ev = yield
@@ -276,7 +271,7 @@ class BlinkenLights(StateMachine):
         self.transition(self.WAITING)
 
   def WAITING(self):
-    self.state.set("WAITING")
+    self.setGuiState("WAITING")
     self.qc.set_next(self.qc.rainbow_cycle)
     while True:
       ev = yield
@@ -297,6 +292,7 @@ class BlinkenLights(StateMachine):
 
   def config_gui(self, root):
     # Set up the GUI part
+    self.gui = True
     frame = LabelFrame(root, text="STATE", padx=5, pady=5)
     frame.pack(fill=X)
     self.state = StringVar()
@@ -311,6 +307,11 @@ class BlinkenLights(StateMachine):
     self.curr_func = 1
     self.strip = MockStrip(self.led_count, frame2)
 
+  def setGuiState(self, state):
+    if self.gui:
+      self.state.set(state)
+
+
   def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel, stuck_open_timeout):
     self.log = logging.getLogger("BlinkenLights")
     self.out_queue = out_queue
@@ -324,7 +325,7 @@ class BlinkenLights(StateMachine):
     self.led_brightness = int(led_brightness) # Set to 0 for darkest and 255 for brightest
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     self.stuck_open_timeout = int(stuck_open_timeout)
-    self.state = NullClass()
+    self.gui = False
     # Create NeoPixel object with appropriate configuration.
     if sys.platform=='linux2':
       self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
