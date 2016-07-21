@@ -41,13 +41,13 @@ class DoorState(StateMachine):
       ev = yield
       self.track(ev)
       if ev['event'] == "VALID_KEY":
-        if self.CLOSED_LOCKED:
+        if self.CLOSED:
           self.transition(self.UNLOCKING)
         else:
           self.transition(self.IS_OPEN)
 
-  def CLOSED_LOCKED(self):
-    self.generate_message({"event": self.name + "_CLOSED_LOCKED"})
+  def CLOSED(self):
+    self.generate_message({"event": self.name + "_CLOSED"})
     self.log.debug("turn off solenoid")
 
     while True:
@@ -75,7 +75,7 @@ class DoorState(StateMachine):
         self.transition(self.OPEN)
       if self.duration() > self.unlock_timeout:
         self.log.debug('Unlocked but was not opened')
-        self.transition(self.CLOSED_LOCKED)
+        self.transition(self.CLOSED)
 
   def OPEN(self):
     self.generate_message({"event": self.name + "_OPENED"})
@@ -87,7 +87,7 @@ class DoorState(StateMachine):
       self.track(ev)
       if not self.IS_OPEN:
         self.STUCK = False
-        self.transition(self.CLOSED_LOCKED)
+        self.transition(self.CLOSED)
       if not self.STUCK and self.duration() > self.stuck_open_timeout:
         self.log.debug("timeout!")
         self.generate_message({"event": self.name + "_STUCK_OPEN"})
@@ -109,8 +109,8 @@ class DoorState(StateMachine):
       to the super class start.
   """
   def start(self):
-    # assume a starting state of CLOSED_LOCKED and appropriate messages will send it to the correct state
-    super(DoorState, self).start(self.CLOSED_LOCKED)
+    # assume a starting state of CLOSED and appropriate messages will send it to the correct state
+    super(DoorState, self).start(self.CLOSED)
 
   def config_gui(self, root):
     self.show_gui = True
