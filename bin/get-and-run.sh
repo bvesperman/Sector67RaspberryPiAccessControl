@@ -26,14 +26,15 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	LOG=/etc/$LOGNAME
 	cp $DIR/bin/$STARTNAME /usr/local/bin
 	START=/usr/local/bin/$STARTNAME
+	cp $DIR/bin/space_machines.service /lib/systemd/system/space_machines.service
+	SERVICE=/lib/systemd/system/space_machines.service
 	apt-get install python-dev python-pip python-tk python-serial #vlc
 	sed -i.backup 's|.*BLANK_TIME=.*|#BLANK_TIME=0|; s|.*BLANK_DPMS=.*|#BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|#POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
 	sed -i.backup "s|#PYTHONPATH#|$PYTHON|; s|#FILEPATH#|$MAIN|; s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file
-	sed -i.backup "s|#STARTPATH#|$START|" $DIR/bin/space_machines.service # enters the start up file path into the service file
-	cp $DIR/bin/space_machines.service /lib/systemd/system/space_machines.service #makes script run on boot
-	chmod 644 /lib/systemd/system/space_machines.service
+	sed -i.backup "s|#STARTPATH#|$START|" $SERVICE # enters the start up file path into the service file
+	chmod 644 $SERVICE
 	systemctl daemon-reload
-	systemctl enable space_machines.service
+	systemctl enable space_machines.service #makes script run on boot
 	systemctl stop serial-getty@ttyAMA0.service # terminates, disables, and keeps disabled serial TTY
 	systemctl disable serial-getty@ttyAMA0.service
 	systemctl mask serial-getty@ttyAMA0.service
