@@ -225,54 +225,40 @@ class BlinkenLights(StateMachine):
 
   def VALID_KEY(self):
     self.setGuiState("VALID_KEY")
+  def MAIN_DOOR_UNLOCKING(self):
+    self.set_gui_state("MAIN_DOOR_UNLOCKING")
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_OPENED":
-        self.transition(self.DOOR_OPENED)
-      if ev['event'] == "DOOR_CLOSED":
-        self.transition(self.WAITING)
-      if ev['event'] == "MAIN_DOOR_CLOSED_LOCKED":
-        self.transition(self.WAITING)
 
   def INVALID_KEY(self):
     self.setGuiState("INVALID_KEY")
+    self.set_gui_state("INVALID_KEY")
     self.qc.set_next(self.qc.flash_colors_red_black)
-    while True:
-      ev = yield
-      if self.duration() > 2:
-        self.transition(self.WAITING)
+    time.sleep(2)
+    self.set_state(self.prev_state)
 
   def MAIN_DOOR_FORCED_OPEN(self):
     self.setGuiState("MAIN_DOOR_FORCED_OPEN")
+    self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
-    #self.qc.set_next(self.qc.flash_colors_red_black)
-    while True:
-      ev = yield
-      if ev['event'] == "VALID_KEY":
-        self.transition(self.VALID_KEY)
 
   def DOOR_OPENED(self):
     self.setGuiState("DOOR_OPENED")
+  def MAIN_DOOR_OPENED(self):
+    self.set_gui_state("DOOR_OPENED")
     self.qc.set_next(self.qc.fade_green_to_red)
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.transition(self.WAITING)
-      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
-        self.transition(self.MAIN_DOOR_STUCK_OPEN)
 
   def MAIN_DOOR_STUCK_OPEN(self):
     self.setGuiState("DOOR_OPENED")
+    self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.transition(self.WAITING)
 
   def WAITING(self):
     self.setGuiState("WAITING")
+  def MAIN_DOOR_CLOSED(self):
+    self.set_gui_state("MAIN_DOOR_CLOSED")
     self.qc.set_next(self.qc.rainbow_cycle)
+  def IDLE(self):
+    self.set_gui_state("IDLE")
     while True:
       ev = yield
       if ev['event'] == "VALID_KEY":
@@ -306,6 +292,35 @@ class BlinkenLights(StateMachine):
     self.next_func = 1
     self.curr_func = 1
     self.strip = MockStrip(self.led_count, frame2)
+      if ev['event'] ==    "MAIN_DOOR_CLOSED":
+        self.set_state(self.MAIN_DOOR_CLOSED)
+      if ev['event'] ==    "MAIN_DOOR_UNLOCKING":
+        self.set_state(self.MAIN_DOOR_UNLOCKING)
+      if ev['event'] ==    "MAIN_DOOR_OPENED":
+        self.set_state(self.MAIN_DOOR_OPENED)
+      if ev['event'] ==    "MAIN_DOOR_FORCED_OPEN":
+        self.set_state(self.MAIN_DOOR_FORCED_OPEN)
+      if ev['event'] ==    "INVALID_KEY":
+        self.set_state(self.INVALID_KEY)
+      if ev['event'] ==    "MAIN_DOOR_STUCK_OPEN":
+        self.set_state(self.MAIN_DOOR_STUCK_OPEN)
+      self.do_state()
+
+  def set_gui_state(self, state):
+    if self.gui:
+      self.gui_state.set(state)
+
+  def do_state(self):
+    if self.curr_state != self.state:
+      self.prev_state = self.state
+      self.state = self.curr_state
+      self.curr_state()
+
+  def get_state(self):
+    return self.state
+
+  def set_state(self, state):
+    self.curr_state = state
 
   def setGuiState(self, state):
     if self.gui:
@@ -326,11 +341,30 @@ class BlinkenLights(StateMachine):
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     self.stuck_open_timeout = int(stuck_open_timeout)
     self.gui = False
+    self.state = None
+    self.prev_state = None
+    self.curr_state = None
     # Create NeoPixel object with appropriate configuration.
     if sys.platform=='linux2':
       self.strip = Adafruit_NeoPixel(self.led_count, self.led_pin, self.led_freq_hz, self.led_dma, self.led_invert, self.led_brightness)
     #self.strip = Adafruit_NeoPixel(self.led_count, 18, 800000, 5, False, 255)
 
+  def config_gui(self, root):
+    # Set up the GUI part
+    self.gui = True
+    frame = LabelFrame(root, text="STATE", padx=5, pady=5)
+    frame.pack(fill=X)
+    self.gui_state = StringVar()
+    self.gui_state.set("[STATE]")
+    label = Label(frame, textvariable = self.gui_state)
+    label.pack(side=LEFT)
+    self.info_frame = frame
+    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5)
+    frame2.pack(fill=X)
+    self.wait_ms = 50
+    self.next_func = 1
+    self.curr_func = 1
+    self.strip = MockStrip(self.led_count, frame2)
 
   """ Perform initialization here, detect the current state and send that
       to the super class start.
@@ -346,7 +380,7 @@ class BlinkenLights(StateMachine):
     self.thread.setDaemon(True)
     self.thread.start()
     self.log.debug("thread started")
-    super(BlinkenLights, self).start(self.WAITING)
+    super(BlinkenLights, self).start(self.IDLE)
 
 
 class MockStrip:
@@ -401,7 +435,7 @@ def main():
   machine = BlinkenLights(name=name)
   machine.setup(out_queue, name=name, led_count=16, led_pin=18, led_freq_hz=800000, led_dma=5, led_invert="False", led_brightness=255, handle_pixel = 8, stuck_open_timeout = 15)
   machine.start()
-  machine.send_message({"event": "VALID_KEY"})
+  machine.send_message({"event": "MAIN_DOOR_UNLOCKING"})
 
   time.sleep(15)
 

@@ -6,84 +6,92 @@ import threading
 from Tkinter import *
 
 from pystates import StateMachine
-
 class DoorState(StateMachine):
+
+  def setInfoText(self,text):
+    if self.show_gui:
+      self.v.set(text)
+      self.infoText = self.v
+
+  def track(self,ev):
+    '''Tracks the state of the door, and updates the vars and display.
+    '''
+    if ev['event'] == 'MAIN_DOOR_MODE_UNLOCKED':
+      self.IN_LOCK_MODE = False
+      self.log.debug('Door left lockmode')
+
+    if ev['event'] == 'MAIN_DOOR_MODE_LOCKED':
+      self.IN_LOCK_MODE = True
+      self.log.debug('Door entered lockmode')
+
+    if ev['event'] == 'MAIN_DOOR_SENSOR_CLOSED':
+      self.IS_OPEN = False
+      self.log.debug('Door closed')
+
+    if ev['event'] == 'MAIN_DOOR_SENSOR_OPENED':
+      self.IS_OPEN = True
+      self.log.debug('Door opened')
+    self.currentInfo ='STUCK: {} | IN_LOCK_MODE: {} | IS_OPEN: {}'.format(self.STUCK, self.IN_LOCK_MODE, self.IS_OPEN)
+    if self.infoText != self.currentInfo:
+      self.setInfoText(self.currentInfo)
+
+  def FORCED(self):
+    self.generate_message({"event": self.name + "_FORCED_OPEN"})
+    while True:
+      ev = yield
+      self.track(ev)
+      if ev['event'] == "VALID_KEY":
+        if self.CLOSED_LOCKED:
+          self.transition(self.UNLOCKING)
+        else:
+          self.transition(self.IS_OPEN)
+
   def CLOSED_LOCKED(self):
     self.generate_message({"event": self.name + "_CLOSED_LOCKED"})
-    if self.show_gui: self.v.set("CLOSED_LOCKED")
     self.log.debug("turn off solenoid")
-    self.generate_message({"event": self.name + "_LOCK_DOOR"})
+
     while True:
       ev = yield
+      self.track(ev)
       if ev['event'] == "VALID_KEY":
-        self.transition(self.CLOSED_UNLOCKING)
-      if ev['event'] == "DOOR_OPENED":
-        self.transition(self.FORCED_OPEN)
+        self.transition(self.UNLOCKING)
+      if self.IS_OPEN:
+        if self.IN_LOCK_MODE:
+          self.transition(self.FORCED)
+        else:
+          self.transition(self.OPEN)
 
-  def CLOSED_UNLOCKING(self):
-    self.generate_message({"event": self.name + "_CLOSED_UNLOCKING", "timeout": self.unlock_timeout})
-    if self.show_gui: self.v.set("CLOSED_UNLOCKING")
+  def UNLOCKING(self):
+    self.generate_message({"event": self.name + "_UNLOCKING", "timeout": self.unlock_timeout})
     self.log.debug("turn on solenoid")
-    self.generate_message({"event": self.name + "_UNLOCK_DOOR"})
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
+
     while True:
       ev = yield
-      if ev['event'] == "DOOR_OPENED":
+      self.track(ev)
+      if self.IS_OPEN:
         self.log.debug('Unlocked and opened')
-        self.transition(self.OPEN_UNLOCKING)
+        time.sleep(self.open_unlock_timeout) #open unlocking replacement (?)
+        self.transition(self.OPEN)
       if self.duration() > self.unlock_timeout:
-        self.log.debug('Unlocked but not opened')
+        self.log.debug('Unlocked but was not opened')
         self.transition(self.CLOSED_LOCKED)
 
-  def OPEN_UNLOCKING(self):
-    self.generate_message({"event": self.name + "_OPEN_UNLOCKING"})
-    if self.show_gui: self.v.set("OPEN_UNLOCKING")
-    self.log.debug("waiting up to " + str(self.open_unlock_timeout) + " seconds")
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.log.debug('Door closed')
-        self.transition(self.CLOSED_LOCKED)
-      if self.duration() > self.open_unlock_timeout:
-        self.transition(self.OPEN_LOCKED)
-
-  def OPEN_LOCKED(self):
-    self.generate_message({"event": self.name + "_OPEN_LOCKED"})
-    if self.show_gui: self.v.set("OPEN_LOCKED")
+  def OPEN(self):
+    self.generate_message({"event": self.name + "_OPENED"})
     self.log.debug("turn off solenoid")
-    self.generate_message({"event": self.name + "_LOCK_DOOR"})
     self.log.debug("waiting up to " + str(self.stuck_open_timeout) + "seconds")
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.log.debug('Door closed')
-        self.transition(self.CLOSED_LOCKED)
-      if self.duration() > self.stuck_open_timeout:
-        self.log.debug("timeout!")
-        self.transition(self.STUCK_OPEN)
 
-  def STUCK_OPEN(self):
-    self.generate_message({"event": self.name + "_STUCK_OPEN"})
-    if self.show_gui: self.v.set("STUCK_OPEN")
-    self.log.debug("door stuck open")
     while True:
       ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.log.debug('Door finally closed')
+      self.track(ev)
+      if not self.IS_OPEN:
+        self.STUCK = False
         self.transition(self.CLOSED_LOCKED)
-
-  def FORCED_OPEN(self):
-    if self.show_gui: self.v.set("FORCED_OPEN")
-    self.generate_message({"event": self.name + "_FORCED_OPEN"})
-    self.log.debug("door forced open")
-    while True:
-      ev = yield
-      if ev['event'] == "DOOR_CLOSED":
-        self.log.debug('Door closed')
-        self.transition(self.CLOSED_LOCKED)
-      if self.duration() > self.stuck_open_timeout:
+      if not self.STUCK and self.duration() > self.stuck_open_timeout:
         self.log.debug("timeout!")
-        self.transition(self.STUCK_OPEN)
+        self.generate_message({"event": self.name + "_STUCK_OPEN"})
+        self.STUCK = True
 
   def setup(self, out_queue, name, unlock_timeout=5, open_unlock_timeout=1, stuck_open_timeout=15):
     self.log = logging.getLogger("DoorState")
@@ -92,6 +100,10 @@ class DoorState(StateMachine):
     self.unlock_timeout = int(unlock_timeout)
     self.open_unlock_timeout = int(open_unlock_timeout)
     self.stuck_open_timeout = int(stuck_open_timeout)
+    self.infoText = ''
+    self.STUCK = False
+    self.IS_OPEN = False
+    self.IN_LOCK_MODE = True
 
   """ Perform initialization here, detect the current state and send that
       to the super class start.
