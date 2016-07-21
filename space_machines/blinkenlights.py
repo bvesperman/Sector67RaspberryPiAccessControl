@@ -224,7 +224,7 @@ class QuickChange:
 class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_UNLOCKING(self):
-    self.state.set("MAIN_DOOR_UNLOCKING")
+    setGuiState("MAIN_DOOR_UNLOCKING")
     self.qc.set_next(self.qc.color_wipe_to_handle_green)
 
   def INVALID_KEY(self):
@@ -238,19 +238,19 @@ class BlinkenLights(StateMachine):
     self.qc.set_next(self.qc.flash_colors_red_black)
 
   def MAIN_DOOR_OPENED(self):
-    self.state.set("DOOR_OPENED")
+    setGuiState("DOOR_OPENED")
     self.qc.set_next(self.qc.fade_green_to_red)
 
   def MAIN_DOOR_STUCK_OPEN(self):
-    self.state.set("MAIN_DOOR_STUCK_OPEN")
+    setGuiState("MAIN_DOOR_STUCK_OPEN")
     self.qc.set_next(self.qc.flash_colors_red_black)
 
   def MAIN_DOOR_CLOSED(self):
-    self.state.set("MAIN_DOOR_CLOSED")
+    setGuiState("MAIN_DOOR_CLOSED")
     self.qc.set_next(self.qc.rainbow_cycle)
 
   def IDLE(self):
-    self.state.set("IDLE")
+    setGuiState("IDLE")
     while True:
       ev = yield
       if ev['event'] == "MAIN_DOOR_CLOSED":
