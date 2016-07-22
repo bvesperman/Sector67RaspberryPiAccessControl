@@ -39,7 +39,7 @@ class GuiAuthorizer(StateMachine):
         else:
           return False
       except AttributeError:
-      return True
+        return True
 
   def WAITING(self):
     while True:
