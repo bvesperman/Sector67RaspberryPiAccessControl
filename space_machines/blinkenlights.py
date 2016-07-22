@@ -150,6 +150,8 @@ class QuickChange:
         time.sleep(self.wait_ms/1000.0)
         if self.next_func != self.curr_func:
           break
+      if self.next_func != self.curr_func:
+        break
 
   def theatre_chase(self, color):
     """Movie theatre light style chaser animation."""
