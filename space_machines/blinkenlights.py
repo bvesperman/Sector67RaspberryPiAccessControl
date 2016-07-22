@@ -146,8 +146,32 @@ class QuickChange:
         time.sleep(self.wait_ms/1000.0)
         if self.next_func != self.curr_func:
           break
-      if self.next_func != self.curr_func:
-        break
+
+def flash_police(self, color1, color2, color3, color4):
+    """Cycle between two colors"""
+    onred=False
+    iterations=10
+    for j in range(iterations):
+      for q in range(2):
+        for i in range(0, self.strip.numPixels(), 2):
+          if q:
+            self.strip.setPixelColor(i, color1) #black
+          else:
+            self.strip.setPixelColor(i, color2) #white
+        for i in range(1, self.strip.numPixels(), 2):
+          if q:
+            if onred:
+              self.strip.setPixelColor(i, color3) #red
+              onred = False
+            else:
+              self.strip.setPixelColor(i, color4) #blue
+              onred = True
+          else:
+            self.strip.setPixelColor(i, color1) #black
+        self.strip.show()
+        time.sleep(self.wait_ms/1000.0)
+        if self.next_func != self.curr_func:
+          break
 
   def theatre_chase(self, color):
     """Movie theatre light style chaser animation."""
@@ -235,7 +259,7 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_FORCED_OPEN(self):
     self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
-    self.qc.set_next(self.qc.flash_colors_red_black)
+    self.qc.set_next(self.qc.flash_police)
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
