@@ -13,7 +13,7 @@ if sys.platform=='linux2':
   class RpiGpioOutput(StateMachine):
 
     def ON(self):
-      self.logger.info(self.name + " output turned on ")
+      self.logger.debug(self.name + " output turned on ")
       GPIO.output(self.gpio_pin, 1)
       while True:
         ev = yield
@@ -21,7 +21,7 @@ if sys.platform=='linux2':
           self.transition(self.OFF)
 
     def OFF(self):
-      self.logger.info(self.name + " output turned off")
+      self.logger.debug(self.name + " output turned off")
       GPIO.output(self.gpio_pin, 0)
       while True:
         ev = yield

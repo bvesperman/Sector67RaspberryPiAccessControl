@@ -13,7 +13,7 @@ if sys.platform=='linux2':
   class RpiGpioSwitch(StateMachine):
 
     def ON(self):
-      self.logger.debug(self.name + " switch is on ")
+      self.logger.info(self.name + " switch is on ")
       while True:
         ev = yield
         state = GPIO.input(self.gpio_pin)
@@ -23,7 +23,7 @@ if sys.platform=='linux2':
           self.transition(self.OFF)
 
     def OFF(self):
-      self.logger.debug(self.name + " switch is off")
+      self.logger.info(self.name + " switch is off")
       while True:
         ev = yield
         state = GPIO.input(self.gpio_pin)
