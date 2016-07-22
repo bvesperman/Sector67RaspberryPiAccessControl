@@ -147,7 +147,7 @@ class QuickChange:
         if self.next_func != self.curr_func:
           break
 
-def flash_police(self, color1, color2, color3, color4):
+  def flash_police(self):
     """Cycle between two colors"""
     onred=False
     iterations=10
@@ -155,19 +155,19 @@ def flash_police(self, color1, color2, color3, color4):
       for q in range(2):
         for i in range(0, self.strip.numPixels(), 2):
           if q:
-            self.strip.setPixelColor(i, color1) #black
+            self.strip.setPixelColor(i, self.Color(0,0,0)) #black
           else:
-            self.strip.setPixelColor(i, color2) #white
+            self.strip.setPixelColor(i, self.Color(255,255,255)) #white
         for i in range(1, self.strip.numPixels(), 2):
           if q:
             if onred:
-              self.strip.setPixelColor(i, color3) #red
+              self.strip.setPixelColor(i, self.Color(255,0,0)) #red
               onred = False
             else:
-              self.strip.setPixelColor(i, color4) #blue
+              self.strip.setPixelColor(i, self.Color(0,0,255)) #blue
               onred = True
           else:
-            self.strip.setPixelColor(i, color1) #black
+            self.strip.setPixelColor(i, self.Color(0,0,0)) #black
         self.strip.show()
         time.sleep(self.wait_ms/1000.0)
         if self.next_func != self.curr_func:
