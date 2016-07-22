@@ -60,9 +60,13 @@ class QuickChange:
     """Movie theatre light style chaser animation."""
     self.theatre_chase(self.Color(255,255,255))
 
+  def flash_colors_blue_red(self):
+    """Cycle between two colors"""
+    self.flash_colors(self.Color(0,0,255), self.Color(255,0,0))
+
   def flash_colors_red_black(self):
     """Cycle between two colors"""
-    self.flash_colors(self.Color(255,0,0), self.Color(128,0,0))
+    self.flash_colors(self.Color(255,0,0), self.Color(96,0,0))
  
   def color_wipe_red(self):
     """Wipe color across display a pixel at a time."""
@@ -144,32 +148,6 @@ class QuickChange:
             self.strip.setPixelColor(i, color1)
         self.strip.show()
         time.sleep(self.wait_ms/1000.0)
-        if self.next_func != self.curr_func:
-          break
-
-  def flash_police(self):
-    """Cycle between two colors"""
-    onred=False
-    iterations=10
-    for j in range(iterations):
-      for q in range(2):
-        for i in range(0, self.strip.numPixels(), 2):
-          if q:
-            self.strip.setPixelColor(i, self.Color(0,0,0)) #black
-          else:
-            self.strip.setPixelColor(i, self.Color(255,255,255)) #white
-        for i in range(1, self.strip.numPixels(), 2):
-          if q:
-            if onred:
-              self.strip.setPixelColor(i, self.Color(255,0,0)) #red
-              onred = False
-            else:
-              self.strip.setPixelColor(i, self.Color(0,0,255)) #blue
-              onred = True
-          else:
-            self.strip.setPixelColor(i, self.Color(0,0,0)) #black
-        self.strip.show()
-        time.sleep((self.wait_ms/1000.0)+.25)
         if self.next_func != self.curr_func:
           break
 
@@ -259,7 +237,7 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_FORCED_OPEN(self):
     self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
-    self.qc.set_next(self.qc.flash_police)
+    self.qc.set_next(self.qc.flash_colors_blue_red)
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
@@ -339,7 +317,7 @@ class BlinkenLights(StateMachine):
     label = Label(frame, textvariable = self.gui_state)
     label.pack(side=LEFT)
     self.info_frame = frame
-    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5)
+    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5, bg='black')
     frame2.pack(fill=X)
     self.wait_ms = 50
     self.next_func = 1
