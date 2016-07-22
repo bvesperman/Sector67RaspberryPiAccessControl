@@ -169,7 +169,7 @@ class QuickChange:
           else:
             self.strip.setPixelColor(i, self.Color(0,0,0)) #black
         self.strip.show()
-        time.sleep(self.wait_ms/1000.0)
+        time.sleep((self.wait_ms/1000.0)+.25)
         if self.next_func != self.curr_func:
           break
 
