@@ -60,10 +60,13 @@ class GuiAuthorizer(StateMachine):
           if "account_balance" in userdata["message"]:
             account_balance = str(userdata["message"]["account_balance"])
         else:
-         user_login = self.eul.get()
-         id = self.eid.get()
-         display_name = self.edn.get()
-         account_balance = self.eab.get()
+          try:
+           user_login = self.eul.get()
+           id = self.eid.get()
+           display_name = self.edn.get()
+           account_balance = self.eab.get()
+          except AttributeError:
+            pass
         is_authorized = self.isRFIDAuthorized(key)
 
         if is_authorized:
