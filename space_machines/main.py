@@ -37,7 +37,8 @@ class MessageThread:
     while True:
       try:
         message = out_queue.get(True, 0.1)
-        logger.info("got event:" + str(message))
+        logger.info(str(message))
+        logger.debug("got event:" + str(message))
         if show_gui:
           self.events.insert('end', str(datetime.datetime.now()) + " event: " + str(message)  + "\n")
           self.events.see(END)
