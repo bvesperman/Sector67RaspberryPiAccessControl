@@ -48,7 +48,9 @@ class DoorState(StateMachine):
 
   def CLOSED(self):
     self.generate_message({"event": self.name + "_CLOSED"})
-    self.log.debug("turn off solenoid")
+    if self.IN_LOCK_MODE:
+      self.log.debug("turn off solenoid")
+      self.generate_message({"event": self.name + "_LOCKED"})
 
     while True:
       ev = yield
@@ -63,7 +65,9 @@ class DoorState(StateMachine):
 
   def UNLOCKING(self):
     self.generate_message({"event": self.name + "_UNLOCKING", "timeout": self.unlock_timeout})
-    self.log.debug("turn on solenoid")
+    if self.IN_LOCK_MODE:
+      self.log.debug("turn on solenoid")
+      self.send_message({"event": self.name + "_UNLOCKED"})
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
 
     while True:
@@ -79,7 +83,9 @@ class DoorState(StateMachine):
 
   def OPEN(self):
     self.generate_message({"event": self.name + "_OPENED"})
-    self.log.debug("turn off solenoid")
+    if self.IN_LOCK_MODE:
+      self.log.debug("turn off solenoid")
+      self.generate_message({"event": self.name + "_LOCKED"})
     self.log.debug("waiting up to " + str(self.stuck_open_timeout) + "seconds")
 
     while True:
