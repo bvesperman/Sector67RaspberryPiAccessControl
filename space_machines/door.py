@@ -67,7 +67,7 @@ class DoorState(StateMachine):
     self.generate_message({"event": self.name + "_UNLOCKING", "timeout": self.unlock_timeout})
     if self.IN_LOCK_MODE:
       self.log.debug("turn on solenoid")
-    self.send_message({"event": self.name + "_UNLOCKED"})
+      self.generate_message({"event": self.name + "_UNLOCKED"})
     self.log.debug("waiting up to " + str(self.unlock_timeout) + " seconds")
 
     while True:
