@@ -8,7 +8,7 @@ else
 	git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 	cd Sector67RaspberryPiAccessControl
 fi
-git checkout pseudo-master
+git checkout alt-pseudo-master
 DIR=$(pwd)
 STARTNAME=s_m_start.sh
 LOGNAME=s_m_logging.conf
