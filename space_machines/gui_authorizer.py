@@ -4,12 +4,12 @@ import Queue
 import threading
 
 test_keys = {
-  7899246 : {"status":"ok","message":{"user_login":"JSmith","ID":"18706","display_name":"Johnny","account_balance":"12.78"}},# format that the url responds with
-  7902312 : {"status":"ok","message":{"user_login":"JDoe","ID":"63150","display_name":"Jane","account_balance":"10.00"}},
-  4696517 : {"status":"ok","message":{"user_login":"CJohnson","ID":"45409","display_name":"Craig","account_balance":"43.67", "valid":"True"}},
-  4699914 : {"status":"ok","message":{"user_login":"JHendrix","ID":"13913","display_name":"Jimmy","account_balance":"7.65", "valid":"False"}},
-  4702055 : {"status":"ok","message":{"user_login":"BKarstens","ID":"81544","display_name":"Barrett","account_balance":"0.52"}},
-  1234567890 : {"status":"ok","message":{"user_login":"CMeyer","ID":"77557","display_name":"Chris","account_balance":"-100.00"}},
+  7899246 : {"status":"ok","message":{"user_login":"JSmith","ID":"18706","display_name":"Johnny","account_balance":"12.78"}, "valid":True},# format that the url responds with
+  7902312 : {"status":"ok","message":{"user_login":"JDoe","ID":"63150","display_name":"Jane","account_balance":"10.00"}, "valid":False},
+  4696517 : {"status":"ok","message":{"user_login":"CJohnson","ID":"45409","display_name":"Craig","account_balance":"43.67"}, "valid":True},
+  4699914 : {"status":"ok","message":{"user_login":"JHendrix","ID":"13913","display_name":"Jimmy","account_balance":"7.65"}, "valid":False},
+  4702055 : {"status":"ok","message":{"user_login":"BKarstens","ID":"81544","display_name":"Barrett","account_balance":"0.52"}, "valid":False},
+  1234567890 : {"status":"ok","message":{"user_login":"CMeyer","ID":"77557","display_name":"Chris","account_balance":"-100.00"}, "valid":True},
   #"" : {"status":"ok","message":{"user_login":"","ID":"","display_name":"","account_balance":""}},
 }
 
@@ -32,7 +32,8 @@ class GuiAuthorizer(StateMachine):
   def isRFIDAuthorized(self, key):
     try:
       return bool(test_keys[key]["valid"])
-    except: 
+    except Exception as e: 
+      self.log.info('Error when checking validity {0}'.format(str(e)))
       try:
         if self.isvalid.get():
           return True
