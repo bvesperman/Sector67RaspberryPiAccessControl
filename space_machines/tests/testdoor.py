@@ -17,7 +17,7 @@ class DoorTests(unittest.TestCase):
     self.doorstate.start()
     
   def test_quick_open_close(self):
-    self.assertEqual(self.doorstate.current_state(), "CLOSED_LOCKED")
+    self.assertEqual(self.doorstate.current_state(), "CLOSED_LOCKED - Nope")
     self.doorstate.send_message({"event": "VALID_KEY"})
     time.sleep(0.1)
     self.assertEqual(self.doorstate.current_state(), "CLOSED_UNLOCKING")
