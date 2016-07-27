@@ -38,3 +38,13 @@ To execute the unit tests, run the following from the root of the repository:
     python -m unittest discover -v
 
 some of the tests will be quite long-running as the test the state machine of things like the door which can have ~15 second timeouts
+
+# Unit Tests XML results file
+
+The test uses unittest-xml-reporting for the build server. The command below installs the module
+
+    sudo easy_install unittest-xml-reporting
+
+The following website describes details of how it is used with the build server.
+    
+    http://www.stevetrefethen.com/blog/publishing-python-unit-test-results-in-jenkins
