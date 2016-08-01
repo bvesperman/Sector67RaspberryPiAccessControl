@@ -38,8 +38,8 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	systemctl stop serial-getty@ttyAMA0.service # terminates, disables, and keeps disabled serial TTY
 	systemctl disable serial-getty@ttyAMA0.service
 	systemctl mask serial-getty@ttyAMA0.service
-	systemctl set-default multi-user.target
-	ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+	systemctl set-default multi-user.target #start in virtual terminal with autologin
+	ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service 
 else
 	echo "OS is not $os, no additional setup performed."
 	isRPi=false
