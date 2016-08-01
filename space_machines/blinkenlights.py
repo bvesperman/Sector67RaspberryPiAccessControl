@@ -52,44 +52,6 @@ class QuickChange:
       pos -= 170
       return self.Color(0, pos * 3, 255 - pos * 3)
 
-  def fade_to_color(self, color24, rate=(5,5,5), fade_time=None):
-    color = self.ColorRGB(color24)
-    _strip_data = {}
-    if fade_time: rate = (.1,.1,.1)
-    while True:
-      time_0= time.time()
-      for i in range(self.strip.numPixels()):
-
-        newcolor = []
-        if i not in _strip_data:
-          _strip_data[i] = (self.strip.getPixelColorRGB(i).r,self.strip.getPixelColorRGB(i).g,self.strip.getPixelColorRGB(i).b)
-        curr_color = _strip_data[i]
-        for j in range(3):
-          tempcolor = None
-          if curr_color[j] == color[j]:
-            tempcolor = color[j]
-          elif curr_color[j] < color[j]:
-            if curr_color[j] + rate[j] > color[j]:
-              tempcolor = color[j]
-            else:
-              tempcolor = curr_color[j] + rate[j]
-          else:
-            if curr_color[j] - rate[j] < color[j]:
-              tempcolor = color[j]
-            else:
-              tempcolor = curr_color[j] - rate[j]
-          newcolor.append(tempcolor)
-        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in newcolor]))
-        _strip_data[i] = newcolor
-      self.strip.show()
-      if fade_time:
-        frame_time = time.time() - time_0
-        tot_frames = float((fade_time)/(frame_time + self.wait_ms/1000.0))
-        rate = (255/tot_frames,255/tot_frames,255/tot_frames)
-      if self.next_func != self.curr_func:
-        return
-      time.sleep(self.wait_ms/1000.0)
-
 #----------------------------------------------------------------------------------------------------
   def fade_green_to_red(self):
     self.fade_to_color(self.Color(255,0,0),fade_time=self.stuck_open_timeout)
@@ -219,6 +181,43 @@ class QuickChange:
       time.sleep(self.wait_ms/1000.0)
       if self.next_func != self.curr_func:
         return
+
+  def fade_to_color(self, color24, rate=(5,5,5), fade_time=None):
+    color = self.ColorRGB(color24)
+    _strip_data = {}
+    if fade_time: rate = (.1,.1,.1)
+    while True:
+      time_0= time.time()
+      for i in range(self.strip.numPixels()):
+        newcolor = []
+        if i not in _strip_data:
+          _strip_data[i] = (self.strip.getPixelColorRGB(i).r,self.strip.getPixelColorRGB(i).g,self.strip.getPixelColorRGB(i).b)
+        curr_color = _strip_data[i]
+        for j in range(3):
+          tempcolor = None
+          if curr_color[j] == color[j]:
+            tempcolor = color[j]
+          elif curr_color[j] < color[j]:
+            if curr_color[j] + rate[j] > color[j]:
+              tempcolor = color[j]
+            else:
+              tempcolor = curr_color[j] + rate[j]
+          else:
+            if curr_color[j] - rate[j] < color[j]:
+              tempcolor = color[j]
+            else:
+              tempcolor = curr_color[j] - rate[j]
+          newcolor.append(tempcolor)
+        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in newcolor]))
+        _strip_data[i] = newcolor
+      self.strip.show()
+      if fade_time:
+        frame_time = time.time() - time_0
+        tot_frames = float((fade_time)/(frame_time + self.wait_ms/1000.0))
+        rate = (255/tot_frames,255/tot_frames,255/tot_frames)
+      if self.next_func != self.curr_func:
+        return
+      time.sleep(self.wait_ms/1000.0)
 
   def set_strip_color(self, color):
     """Sets the color of all pixels."""
