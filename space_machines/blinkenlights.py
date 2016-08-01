@@ -92,7 +92,6 @@ class QuickChange:
 
 #----------------------------------------------------------------------------------------------------
   def fade_green_to_red(self):
-    self.set_color_green()
     self.fade_to_color(self.Color(255,0,0),fade_time=self.stuck_open_timeout)
 
   def color_wipe_to_handle_green(self):
@@ -155,12 +154,14 @@ class QuickChange:
     for i in range(self.strip.numPixels()):
       self.strip.setPixelColor(i, color)
       if self.next_func != self.curr_func:
+        self.rainbow_cycle()
         return
     for i in range(pointing):
       self.strip.setPixelColor(handle - i, self.Color(0,0,0))
       self.strip.setPixelColor(handle + i, self.Color(0,0,0))
       self.strip.show()
       if self.next_func != self.curr_func:
+        self.rainbow_cycle()
         return
     
     for i in range(pointing -1, -1, -1):
@@ -168,6 +169,7 @@ class QuickChange:
       self.strip.setPixelColor(handle + i, color)
       self.strip.show()
       if self.next_func != self.curr_func:
+        self.rainbow_cycle()
         return
       time.sleep(self.wait_ms/1000.0)
 
