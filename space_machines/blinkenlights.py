@@ -15,36 +15,46 @@ class QuickChange:
   def __init__(self, handle_pixel=20, trans_time=1):
     self._data_master = {}
     self._data_secondary = {} #currently unused.
-    self.set_next(self.color_wipe_blue)
     self.curr_func = self.color_wipe_blue
+    self.set_next(self.color_wipe_blue)
     self.wait_ms = 50
     self.handle_pixel = handle_pixel
     self.trans_time = float(trans_time)
 
   def update_strip(self, data):
     """Updates the strip then shows the new strip."""
-    while True:
-      for i in data:
-        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
-      self.strip.show()
+    for i in data:
+      self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
+    self.strip.show()
 
   def main(self):
     for i in range(self.strip.numPixels()):
       self._data_master[i] = (0,0,0)
     _data_out = self._data_master
     j = 0
+    self.start_trans = None
     while True:
+      print(j)
       if self.curr_func == self.next_func:
         _data_out = self.curr_func(self._data_master, j)
+
       else:
+        if not isinstance(self.start_trans, float):
+          self.start_trans = time.time()
+        self.duration = self.start_trans - time.time()
         self._data_curr_func = self.curr_func(self._data_master, j)
         self._data_next_func = self.next_func(self._data_master, j)
-        duration = self.duration()
-        if duration >= self.trans_time:
+        if self.duration >= self.trans_time:
           self.curr_func = self.next_func
-          _data_out = self.curr_func(self._data_master, j)
+          _data_out = self._data_next_func
+          self.start_trans = None
         else:
-          _data_out = [(1 - duration/self.trans_time)*self._data_curr_func[i] + (duration/self.trans_time)*self._data_next_func[i] for i in self._data_master]
+          for k in self._data_master:
+            for v in self._data_master[k]:
+              print(k,v)
+              print(self._data_master[k])
+              print(self._data_curr_func[k])
+              _data_out[k][v] = (1 - self.duration/self.trans_time)*self._data_curr_func[k][v] + (self.duration/self.trans_time)*self._data_next_func[k][v]
       self._data_master = _data_out
       self.update_strip(self._data_master)
       time.sleep(self.wait_ms/1000.0)
