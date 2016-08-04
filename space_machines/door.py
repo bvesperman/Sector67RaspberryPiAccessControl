@@ -20,15 +20,15 @@ class DoorState(StateMachine):
       self.IN_LOCK_MODE = False
       self.log.debug('Door left lockmode')
 
-    if ev['event'] == 'MAIN_DOOR_MODE_LOCKED':
+    elif ev['event'] == 'MAIN_DOOR_MODE_LOCKED':
       self.IN_LOCK_MODE = True
       self.log.debug('Door entered lockmode')
 
-    if ev['event'] == 'MAIN_DOOR_SENSOR_CLOSED':
+    elif ev['event'] == 'MAIN_DOOR_SENSOR_CLOSED':
       self.IS_OPEN = False
       self.log.debug('Door closed')
 
-    if ev['event'] == 'MAIN_DOOR_SENSOR_OPENED':
+    elif ev['event'] == 'MAIN_DOOR_SENSOR_OPENED':
       self.IS_OPEN = True
       self.log.debug('Door opened')
     self.currentInfo ='STUCK: {} | IN_LOCK_MODE: {} | IS_OPEN: {}'.format(self.STUCK, self.IN_LOCK_MODE, self.IS_OPEN)

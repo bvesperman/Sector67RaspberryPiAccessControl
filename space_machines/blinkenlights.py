@@ -12,26 +12,55 @@ import random
 
  
 class QuickChange:
-  def __init__(self, handle_pixel=20):
+  def __init__(self, handle_pixel=20, trans_time=1):
+    self._data_master = {}
+    self._data_secondary = {} #currently unused.
     self.set_next(self.color_wipe_blue)
     self.curr_func = self.color_wipe_blue
     self.wait_ms = 50
     self.handle_pixel = handle_pixel
+    self.trans_time = float(trans_time)
+
+  def update_strip(self, data):
+    """Updates the strip then shows the new strip."""
+    while True:
+      for i in data:
+        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
+      self.strip.show()
 
   def main(self):
+    for i in range(self.strip.numPixels()):
+      self._data_master[i] = (0,0,0)
+    _data_out = self._data_master
+    j = 0
     while True:
-      self.next_func()
-      self.curr_func = self.next_func
+      if self.curr_func == self.next_func:
+        _data_out = self.curr_func(self._data_master, j)
+      else:
+        self._data_curr_func = self.curr_func(self._data_master, j)
+        self._data_next_func = self.next_func(self._data_master, j)
+        duration = self.duration()
+        if duration >= self.trans_time:
+          self.curr_func = self.next_func
+          _data_out = self.curr_func(self._data_master, j)
+        else:
+          _data_out = [(1 - duration/self.trans_time)*self._data_curr_func[i] + (duration/self.trans_time)*self._data_next_func[i] for i in self._data_master]
+      self._data_master = _data_out
+      self.update_strip(self._data_master)
+      time.sleep(self.wait_ms/1000.0)
+      j += 1
 
   def set_next(self, next_func):
+    """Sets the next function to be displayed."""
     self.next_func = next_func
     #print(next_func)
 
   def set_strip(self, strip):
+    """Sets the LED strip instance."""
     self.strip = strip
 
   def ColorRGB(self, color):
-    """returns color as a truple of integers (R,G,B)."""
+    """Returns color as a truple of integers (R,G,B)."""
     return (int(bin(color)[2:].zfill(24)[:-16],2), int(bin(color)[2:].zfill(24)[-16:-8],2), int(bin(color)[2:].zfill(24)[-8:],2))
 
   def Color(self,red, green, blue):
@@ -44,188 +73,145 @@ class QuickChange:
   def wheel(self, pos):
     """Generate rainbow colors across 0-255 positions."""
     if pos < 85:
-      return self.Color(pos * 3, 255 - pos * 3, 0)
+      return (pos * 3, 255 - pos * 3, 0)
     elif pos < 170:
       pos -= 85
-      return self.Color(255 - pos * 3, 0, pos * 3)
+      return (255 - pos * 3, 0, pos * 3)
     else:
       pos -= 170
-      return self.Color(0, pos * 3, 255 - pos * 3)
+      return (0, pos * 3, 255 - pos * 3)
 
 #----------------------------------------------------------------------------------------------------
-  def fade_green_to_red(self):
-    self.fade_to_color(self.Color(255,0,0),fade_time=self.stuck_open_timeout)
+  def fade_to_green(self, data, j):
+    return self.fade_to_color(data, j, (0,255,0))
+  def fade_to_red(self, data, j):
+    return self.fade_to_color(data, j, (255,0,0),fade_time=self.stuck_open_timeout)
 
-  def color_wipe_to_handle_green(self):
+  def color_wipe_to_handle_green(self, data, j):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe_to_handle(self.Color(0,255,0))
+    return self.color_wipe_to_handle(data, j, (0,255,0))
 
-  def theatre_chase_white(self):
+  def theatre_chase_white(self, data, j):
     """Movie theatre light style chaser animation."""
-    self.theatre_chase(self.Color(255,255,255))
+    return self.theatre_chase(data, j, (255,255,255))
 
-  def flash_colors_blue_red(self):
+  def flash_colors_blue_red(self, data, j):
     """Cycle between two colors"""
-    self.flash_colors(self.Color(0,0,255), self.Color(255,0,0))
+    return self.flash_colors(data, j, (0,0,255), (255,0,0))
 
-  def flash_colors_red_black(self):
+  def flash_colors_red_black(self, data, j):
     """Cycle between two colors"""
-    self.flash_colors(self.Color(255,0,0), self.Color(96,0,0))
+    return self.flash_colors(data, j, (255,0,0), (96,0,0))
  
-  def color_wipe_red(self):
+  def color_wipe_red(self, data, j):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe(self.Color(255, 0, 0))
+    return self.color_wipe(data, j, (255, 0, 0))
 
-  def color_wipe_green(self):
+  def color_wipe_green(self, data, j):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe(self.Color(0, 255, 0))
+    return self.color_wipe(data, j, (0, 255, 0))
 
-  def color_wipe_blue(self):
+  def color_wipe_blue(self, data, j):
     """Wipe color across display a pixel at a time."""
-    self.color_wipe(self.Color(0, 0, 255))
+    return self.color_wipe(data, j, (0, 0, 255))
 
-  def set_color_green(self):
+  def set_color_green(self, data, j):
     """Sets the color of all pixels."""
-    self.set_strip_color(self.Color(0,255,0))
+    return self.set_strip_color(data, j, (0,255,0))
 
-  def rainbow(self):
+  def rainbow(self, data, j):
     """Draw rainbow that fades across all pixels at once."""
-    for j in range(256):
-      for i in range(self.strip.numPixels()):
-        self.strip.setPixelColor(i, self.wheel((i+j) & 255))
-      self.strip.show()
-      time.sleep(self.wait_ms/1000.0)
-      if self.next_func != self.curr_func:
-        return
+    _data_out = data
+    for i in data:
+      _data_out[i] = self.wheel((i+j) & 255)
+    return _data_out
   
-  def rainbow_cycle(self):
+  def rainbow_cycle(self, data, j):
     """Draw rainbow that uniformly distributes itself across all pixels."""
-    for j in range(256*5):
-      for i in range(self.strip.numPixels()):
-        self.strip.setPixelColor(i, self.wheel(((i * 256 / self.strip.numPixels()) + j) & 255))
-      self.strip.show()
-      time.sleep(self.wait_ms/1000.0)
-      if self.next_func != self.curr_func:
-        return
+    _data_out = data
+    for i in data:
+      _data_out[i] = self.wheel((i * 256 / len(data)) + j & 255)
+    return _data_out
 
-  def color_wipe_to_handle(self, color):
+  def color_wipe_to_handle(self, data, j, color, pointing=10):
     """Wipe color across display a pixel at a time."""
     handle = self.handle_pixel
-    pointing = 10
     # turn all green
-    for i in range(self.strip.numPixels()):
-      self.strip.setPixelColor(i, color)
-      if self.next_func != self.curr_func:
-        self.rainbow_cycle()
-        return
+    for i in data:
+      data[i] = color
     for i in range(pointing):
-      self.strip.setPixelColor(handle - i, self.Color(0,0,0))
-      self.strip.setPixelColor(handle + i, self.Color(0,0,0))
+      data[handle - i] = (0,0,0)
+      data[handle + i] = (0,0,0)
       self.strip.show()
-      if self.next_func != self.curr_func:
-        self.rainbow_cycle()
-        return
     
     for i in range(pointing -1, -1, -1):
-      self.strip.setPixelColor(handle - i, color)
-      self.strip.setPixelColor(handle + i, color)
+      data[handle - i] = color
+      data[handle + i] = color
       self.strip.show()
-      if self.next_func != self.curr_func:
-        self.rainbow_cycle()
-        return
-      time.sleep(self.wait_ms/1000.0)
 
-  def flash_colors(self, color1, color2):
+  def flash_colors(self, data, j, color1, color2):
     """Cycle between two colors"""
-    iterations=10
-    for j in range(iterations):
-      for q in range(2):
-        for i in range(0, self.strip.numPixels(), 2):
-          if q:
-            self.strip.setPixelColor(i, color1)
-          else:
-            self.strip.setPixelColor(i, color2)
-        for i in range(1, self.strip.numPixels(), 2):
-          if q:
-            self.strip.setPixelColor(i, color2)
-          else:
-            self.strip.setPixelColor(i, color1)
-        self.strip.show()
-        time.sleep(self.wait_ms/1000.0)
-        if self.next_func != self.curr_func:
-          break
-      if self.next_func != self.curr_func:
-        return
+    _data_out = data
+    for i in data:
+      if i%2==0:
+        if j%2==0:
+          _data_out[i] = color1
+        else:
+          _data_out[i] = color2
+      else:
+        if j%2==0:
+          _data_out[i] = color2
+        else:
+          _data_out[i] = color1
+    return _data_out
 
-  def theatre_chase(self, color):
+  def theatre_chase(self, data, j, color1, color2=(0,0,0)):
     """Movie theatre light style chaser animation."""
-    iterations=10
-    for j in range(iterations):
-      for q in range(3):
-        for i in range(0, self.strip.numPixels(), 3):
-          self.strip.setPixelColor(i+q, color)
-        self.strip.show()
-        time.sleep(self.wait_ms/1000.0)
-        if self.next_func != self.curr_func:
-          break
-        for i in range(0, self.strip.numPixels(), 3):
-          self.strip.setPixelColor(i+q, 0)
-      if self.next_func != self.curr_func:
-        return
+    _data_out = data
+    for i in data:
+      if i%3==0:
+        _data_out[i+j%3] = color1
+        _data_out[i+(j - 1)%3] = color2
+    return _data_out
 
-  def color_wipe(self, color):
+  def color_wipe(self, data, j, color):
     """Wipe color across display a pixel at a time."""
-    for i in range(self.strip.numPixels()):
-      self.strip.setPixelColor(i, color)
-      self.strip.show()
-      time.sleep(self.wait_ms/1000.0)
-      if self.next_func != self.curr_func:
-        return
+    _data_out = data
+    _data_out[j%self.strip.numPixels()] = color
+    return _data_out
 
-  def fade_to_color(self, color24, rate=(5,5,5), fade_time=None):
-    color = self.ColorRGB(color24)
-    _strip_data = {}
-    if fade_time: rate = (.1,.1,.1)
-    while True:
-      time_0= time.time()
-      for i in range(self.strip.numPixels()):
-        newcolor = []
-        if i not in _strip_data:
-          _strip_data[i] = (self.strip.getPixelColorRGB(i).r,self.strip.getPixelColorRGB(i).g,self.strip.getPixelColorRGB(i).b)
-        curr_color = _strip_data[i]
-        for j in range(3):
-          tempcolor = None
-          if curr_color[j] == color[j]:
-            tempcolor = color[j]
-          elif curr_color[j] < color[j]:
-            if curr_color[j] + rate[j] > color[j]:
-              tempcolor = color[j]
-            else:
-              tempcolor = curr_color[j] + rate[j]
+  def fade_to_color(self, data, j, color, rate=(5,5,5), fade_time=None):
+    _data_out = data
+    if fade_time:
+      tot_frames = float((fade_time)/(self.wait_ms/1000.0)) #float((fade_time)/(frame_time + self.wait_ms/1000.0))
+      rate = (255/tot_frames,255/tot_frames,255/tot_frames)
+    for i in data:
+      newcolor = []
+      curr_color = data[i]
+      for c in range(3):
+        tempcolor = None
+        if curr_color[c] == color[c]:
+          tempcolor = color[c]
+        elif curr_color[c] < color[c]:
+          if curr_color[c] + rate[c] > color[c]:
+            tempcolor = color[c]
           else:
-            if curr_color[j] - rate[j] < color[j]:
-              tempcolor = color[j]
-            else:
-              tempcolor = curr_color[j] - rate[j]
-          newcolor.append(tempcolor)
-        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in newcolor]))
-        _strip_data[i] = newcolor
-      self.strip.show()
-      if fade_time:
-        frame_time = time.time() - time_0
-        tot_frames = float((fade_time)/(frame_time + self.wait_ms/1000.0))
-        rate = (255/tot_frames,255/tot_frames,255/tot_frames)
-      if self.next_func != self.curr_func:
-        return
-      time.sleep(self.wait_ms/1000.0)
+            tempcolor = curr_color[c] + rate[c]
+        else:
+          if curr_color[c] - rate[c] < color[c]:
+            tempcolor = color[c]
+          else:
+            tempcolor = curr_color[c] - rate[c]
+        newcolor.append(tempcolor)
+      _data_out[i] = newcolor
+    return _data_out
 
-  def set_strip_color(self, color):
+  def set_strip_color(self, data, j, color):
     """Sets the color of all pixels."""
-    for i in range(self.strip.numPixels()):
-      self.strip.setPixelColor(i, color)
-      self.strip.show()
-      if self.next_func != self.curr_func:
-        return
+    _data_out
+    for i in data:
+      _data_out[i] = color
+    return _data_out
 
 class BlinkenLights(StateMachine):
 
@@ -245,7 +231,7 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
-    self.qc.set_next(self.qc.fade_green_to_red)
+    self.qc.set_next(self.qc.fade_to_red)
 
   def MAIN_DOOR_STUCK_OPEN(self):
     self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
@@ -318,7 +304,7 @@ class BlinkenLights(StateMachine):
     frame.pack(fill=X)
     self.gui_state = StringVar()
     self.gui_state.set("[STATE]")
-    label = Label(frame, textvariable = self.gui_state)
+    label = Label(frame, textvariable = self.gui_state, justify=LEFT)
     label.pack(side=LEFT)
     self.info_frame = frame
     frame2 = LabelFrame(root, text=self.name, padx=5, pady=5, bg='black')
