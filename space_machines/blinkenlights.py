@@ -38,11 +38,13 @@ class QuickChange:
         _data_out = self.curr_func(self._data_master, j)
       else:
         if not isinstance(self.time_0, float): #if starting transition
+          print('starting transition...')
           self.time_0 = time.time()
         self.duration = time.time() - self.time_0
         self._data_curr_func = self.curr_func(self._data_master, j) #!----------------------------------------------------------------------------------------------------
         self._data_next_func = self.next_func(self._data_master, j) #!----------------------------------------------------------------------------------------------------
         if self.duration >= self.trans_time: #if the transition time is over
+          print('transition complete.')
           self.curr_func = self.next_func
           _data_out = self._data_next_func
           self.time_0 = None
@@ -51,6 +53,11 @@ class QuickChange:
             ktemp = []
             for v in range(3):
               ktemp.append((1 - self.duration/self.trans_time)*self._data_curr_func[k][v] + (self.duration/self.trans_time)*self._data_next_func[k][v])
+              print
+              print
+              print('{a} ({b}%) --{f}'.format(a=self._data_curr_func[k][v], b=int((1 - self.duration/self.trans_time)*100), f=self.curr_func))
+              print('{c} ({d}%) --{g}'.format(c=self._data_next_func[k][v], d=int((self.duration/self.trans_time)*100), g=self.curr_func))
+              print('{e}'.format(e=(1 - self.duration/self.trans_time)*self._data_curr_func[k][v] + (self.duration/self.trans_time)*self._data_next_func[k][v]))
             _data_out[k] = ktemp
       self._data_master = _data_out
       self.update_strip(self._data_master)
@@ -196,14 +203,22 @@ class QuickChange:
   def fade_to_color(self, data, j, color, rate=(5,5,5), fade_time=None):
     """Fades to color."""
     _data = data
+    #print("--------------------------------------------------")
     if fade_time:
       tot_frames = float((fade_time)/(self.wait_ms/1000.0)) #float((fade_time)/(frame_time + self.wait_ms/1000.0))
       rate = (255/tot_frames,255/tot_frames,255/tot_frames)
     for i in data:
       newcolor = []
       curr_color = data[i]
+      print("{i}: {cc}".format(i=i, cc=curr_color))
       for c in range(3):
         tempcolor = None
+        if curr_color[c] < color[c] and curr_color[c] + rate[c] > color[c]:
+          #print("cc < c && cc + r > c")
+          pass
+        elif curr_color[c] > color[c] and curr_color[c] - rate[c] < color[c]:
+          #print("cc > c && cc - r < c")
+          pass
         if curr_color[c] == color[c] \
         or (curr_color[c] < color[c] and curr_color[c] + rate[c] > color[c]) \
         or (curr_color[c] > color[c] and curr_color[c] - rate[c] < color[c]): # Is this actually more helpful than if statements in if statements?
@@ -215,6 +230,7 @@ class QuickChange:
         newcolor.append(tempcolor)
       _data[i] = newcolor
     return _data
+      print("{i}: {nc}".format(i=i, nc=(newcolor)))
 
   def set_strip_color(self, data, j, color):
     """Sets the color of all pixels."""
@@ -241,6 +257,7 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
+    self.qc.set_next(self.qc.color_wipe_blue)
 
   def MAIN_DOOR_STUCK_OPEN(self):
     self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
@@ -319,8 +336,6 @@ class BlinkenLights(StateMachine):
     frame2 = LabelFrame(root, text=self.name, padx=5, pady=5, bg='black')
     frame2.pack(fill=X)
     self.wait_ms = 50
-    self.next_func = 1
-    self.curr_func = 1
     self.strip = MockStrip(self.led_count, frame2)
 
   """ Perform initialization here, detect the current state and send that
