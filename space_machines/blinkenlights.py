@@ -12,7 +12,7 @@ import random
 
  
 class QuickChange:
-  def __init__(self, handle_pixel=20, trans_time=1):
+  def __init__(self, handle_pixel=20, trans_time=7):
     self._data_master = {}
     self._data_secondary = {} #currently unused.
     self.curr_func = self.color_wipe_blue
@@ -32,29 +32,26 @@ class QuickChange:
       self._data_master[i] = (0,0,0)
     _data_out = self._data_master
     j = 0
-    self.start_trans = None
+    self.time_0 = None
     while True:
-      print(j)
       if self.curr_func == self.next_func:
         _data_out = self.curr_func(self._data_master, j)
-
       else:
-        if not isinstance(self.start_trans, float):
-          self.start_trans = time.time()
-        self.duration = self.start_trans - time.time()
+        if not isinstance(self.time_0, float):
+          self.time_0 = time.time()
+        self.duration = time.time() - self.time_0
         self._data_curr_func = self.curr_func(self._data_master, j)
         self._data_next_func = self.next_func(self._data_master, j)
         if self.duration >= self.trans_time:
           self.curr_func = self.next_func
           _data_out = self._data_next_func
-          self.start_trans = None
+          self.time_0 = None
         else:
           for k in self._data_master:
-            for v in self._data_master[k]:
-              print(k,v)
-              print(self._data_master[k])
-              print(self._data_curr_func[k])
-              _data_out[k][v] = (1 - self.duration/self.trans_time)*self._data_curr_func[k][v] + (self.duration/self.trans_time)*self._data_next_func[k][v]
+            ktemp = []
+            for v in range(3):
+              ktemp.append((1 - self.duration/self.trans_time)*self._data_curr_func[k][v] + (self.duration/self.trans_time)*self._data_next_func[k][v])
+            _data_out[k] = ktemp
       self._data_master = _data_out
       self.update_strip(self._data_master)
       time.sleep(self.wait_ms/1000.0)
@@ -93,8 +90,11 @@ class QuickChange:
 
 #----------------------------------------------------------------------------------------------------
   def fade_to_green(self, data, j):
+    """Fades to green."""
     return self.fade_to_color(data, j, (0,255,0))
+
   def fade_to_red(self, data, j):
+    """Fades to red."""
     return self.fade_to_color(data, j, (255,0,0),fade_time=self.stuck_open_timeout)
 
   def color_wipe_to_handle_green(self, data, j):
@@ -125,25 +125,28 @@ class QuickChange:
     """Wipe color across display a pixel at a time."""
     return self.color_wipe(data, j, (0, 0, 255))
 
+  def set_color_red(self, data, j):
+    return self.set_strip_color(data, j, (255, 0, 0))
+
   def set_color_green(self, data, j):
     """Sets the color of all pixels."""
     return self.set_strip_color(data, j, (0,255,0))
 
   def rainbow(self, data, j):
     """Draw rainbow that fades across all pixels at once."""
-    _data_out = data
+    _data = data
     for i in data:
-      _data_out[i] = self.wheel((i+j) & 255)
-    return _data_out
+      _data[i] = self.wheel((i+j) & 255)
+    return _data
   
   def rainbow_cycle(self, data, j):
     """Draw rainbow that uniformly distributes itself across all pixels."""
-    _data_out = data
+    _data = data
     for i in data:
-      _data_out[i] = self.wheel((i * 256 / len(data)) + j & 255)
-    return _data_out
+      _data[i] = self.wheel((i * 256 / len(data)) + j & 255)
+    return _data
 
-  def color_wipe_to_handle(self, data, j, color, pointing=10):
+  '''def color_wipe_to_handle(self, data, j, color, pointing=10): #Yet to be worked on. Completed simpler functions first.
     """Wipe color across display a pixel at a time."""
     handle = self.handle_pixel
     # turn all green
@@ -157,41 +160,42 @@ class QuickChange:
     for i in range(pointing -1, -1, -1):
       data[handle - i] = color
       data[handle + i] = color
-      self.strip.show()
+      self.strip.show()'''
 
   def flash_colors(self, data, j, color1, color2):
     """Cycle between two colors"""
-    _data_out = data
+    _data = data
     for i in data:
       if i%2==0:
         if j%2==0:
-          _data_out[i] = color1
+          _data[i] = color1
         else:
-          _data_out[i] = color2
+          _data[i] = color2
       else:
         if j%2==0:
-          _data_out[i] = color2
+          _data[i] = color2
         else:
-          _data_out[i] = color1
-    return _data_out
+          _data[i] = color1
+    return _data
 
   def theatre_chase(self, data, j, color1, color2=(0,0,0)):
     """Movie theatre light style chaser animation."""
-    _data_out = data
+    _data = data
     for i in data:
       if i%3==0:
-        _data_out[i+j%3] = color1
-        _data_out[i+(j - 1)%3] = color2
-    return _data_out
+        _data[i+j%3] = color1
+        _data[i+(j - 1)%3] = color2
+    return _data
 
   def color_wipe(self, data, j, color):
     """Wipe color across display a pixel at a time."""
-    _data_out = data
-    _data_out[j%self.strip.numPixels()] = color
-    return _data_out
+    _data = data
+    _data[j%self.strip.numPixels()] = color
+    return _data
 
   def fade_to_color(self, data, j, color, rate=(5,5,5), fade_time=None):
-    _data_out = data
+    """Fades to color."""
+    _data = data
     if fade_time:
       tot_frames = float((fade_time)/(self.wait_ms/1000.0)) #float((fade_time)/(frame_time + self.wait_ms/1000.0))
       rate = (255/tot_frames,255/tot_frames,255/tot_frames)
@@ -200,28 +204,24 @@ class QuickChange:
       curr_color = data[i]
       for c in range(3):
         tempcolor = None
-        if curr_color[c] == color[c]:
+        if curr_color[c] == color[c] \
+        or (curr_color[c] < color[c] and curr_color[c] + rate[c] > color[c]) \
+        or (curr_color[c] > color[c] and curr_color[c] - rate[c] < color[c]): # Is this actually more helpful than if statements in if statements?
           tempcolor = color[c]
         elif curr_color[c] < color[c]:
-          if curr_color[c] + rate[c] > color[c]:
-            tempcolor = color[c]
-          else:
-            tempcolor = curr_color[c] + rate[c]
+          tempcolor = curr_color[c] + rate[c]
         else:
-          if curr_color[c] - rate[c] < color[c]:
-            tempcolor = color[c]
-          else:
-            tempcolor = curr_color[c] - rate[c]
+          tempcolor = curr_color[c] - rate[c]
         newcolor.append(tempcolor)
-      _data_out[i] = newcolor
-    return _data_out
+      _data[i] = newcolor
+    return _data
 
   def set_strip_color(self, data, j, color):
     """Sets the color of all pixels."""
-    _data_out
+    _data = data
     for i in data:
-      _data_out[i] = color
-    return _data_out
+      _data[i] = color
+    return _data
 
 class BlinkenLights(StateMachine):
 
@@ -241,7 +241,6 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
-    self.qc.set_next(self.qc.fade_to_red)
 
   def MAIN_DOOR_STUCK_OPEN(self):
     self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
