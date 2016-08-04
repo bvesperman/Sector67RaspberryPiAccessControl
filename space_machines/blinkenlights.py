@@ -229,8 +229,8 @@ class QuickChange:
           tempcolor = curr_color[c] - rate[c]
         newcolor.append(tempcolor)
       _data[i] = newcolor
-    return _data
       print("{i}: {nc}".format(i=i, nc=(newcolor)))
+    return _data
 
   def set_strip_color(self, data, j, color):
     """Sets the color of all pixels."""
