@@ -37,12 +37,12 @@ class QuickChange:
       if self.curr_func == self.next_func:
         _data_out = self.curr_func(self._data_master, j)
       else:
-        if not isinstance(self.time_0, float):
+        if not isinstance(self.time_0, float): #if starting transition
           self.time_0 = time.time()
         self.duration = time.time() - self.time_0
-        self._data_curr_func = self.curr_func(self._data_master, j)
-        self._data_next_func = self.next_func(self._data_master, j)
-        if self.duration >= self.trans_time:
+        self._data_curr_func = self.curr_func(self._data_master, j) #!----------------------------------------------------------------------------------------------------
+        self._data_next_func = self.next_func(self._data_master, j) #!----------------------------------------------------------------------------------------------------
+        if self.duration >= self.trans_time: #if the transition time is over
           self.curr_func = self.next_func
           _data_out = self._data_next_func
           self.time_0 = None
