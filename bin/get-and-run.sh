@@ -53,6 +53,7 @@ $PYTHON -m pip uninstall $DIR
 $PYTHON -m pip install $DIR
 
 if [[ "$kernalinfo" =~ "$os" ]]; then
+	systemctl stop space_machines.service
 	systemctl start space_machines.service
 else
 	$START
