@@ -15,6 +15,7 @@ class QuickChange:
   def __init__(self, handle_pixel=20, trans_time=1.5):
     self.time_0 = None
     self.wait_ms = 50
+    self.sur_func = None
     self.curr_func = self.color_wipe_blue
     self.set_next(self.color_wipe_blue)
     self.handle_pixel = handle_pixel
@@ -68,6 +69,15 @@ class QuickChange:
           color[-1] = 255
       _data.append(color)
     return _data
+
+  def set_overlay(self,func):
+    self.sur_func = func
+
+  def get_overlay(self): #!WIP/unfinished
+    return self.sur_func
+
+  def clear_overlay(self): #WIP/unfinished
+    self.sur_func = None
 
   def set_next(self, next_func):
     """Sets the next function to be displayed."""
