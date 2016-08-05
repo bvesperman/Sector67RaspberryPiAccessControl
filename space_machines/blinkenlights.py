@@ -15,7 +15,9 @@ class QuickChange:
   def __init__(self, handle_pixel=20, trans_time=1.5):
     self.time_0 = None
     self.wait_ms = 50
-    self.sur_func = None
+    self.sur_curr = None
+    self.sur_next = None
+    self.overlay_opacity = .75
     self.curr_func = self.color_wipe_blue
     self.set_next(self.color_wipe_blue)
     self.handle_pixel = handle_pixel
@@ -30,17 +32,24 @@ class QuickChange:
   def main(self):
     j = 0 #iterator for all functions run by main
     while True:
+
       if self.curr_func == self.next_func:
         _data_out = self.curr_func(j)
       else:
         _data_out = self.mix(j, self.curr_func(j), self.next_func(j), self.fade_multipliers(self.trans_time))
         if not self.time_0:
           self.curr_func = self.next_func
-      if self.sur_func:
-        _data_out = self.mix(j, _data_out, self.sur_func.func(j), (1,self.sur_func.get_multiplier()))
-        print(_data_out)
-        if self.sur_func.is_finished():
-          self.sur_func = None
+
+
+      if self.sur_curr == self.sur_next:
+        if self.sur_curr:
+          _data_out = self.mix(j, _data_out, self.sur_curr(j), (1,self.overlay_opacity))
+      else:
+        sur_temp = self.mix(j, self.sur_curr(j) if self.sur_curr else self.set_color_black(j), self.sur_next(j) if self.sur_next else self.set_color_black(j), self.fade_multipliers(self.trans_time))
+        _data_out = self.mix(j, _data_out, sur_temp, (1,self.overlay_opacity))
+        if not self.time_0:
+          self.sur_curr = self.sur_next
+
       self.update_strip(_data_out)
       time.sleep(self.wait_ms/1000.0)
       j += 1
@@ -58,7 +67,7 @@ class QuickChange:
     else:
       return (1. - self.duration/duration, self.duration/duration)
 
-  def mix(self, j, data1, data2, multipliers=(1,.5)):
+  def mix(self, j, data1, data2, multipliers=(.85,.15)):
     """Displays multiple functions at once, weighted with the multipliers."""
     _data = []
     for i in range(self.strip.numPixels()):
@@ -70,19 +79,24 @@ class QuickChange:
       _data.append(color)
     return _data
 
-  def set_overlay(self,func):
-    self.sur_func = func
-
   def get_overlay(self): #!WIP/unfinished
-    return self.sur_func
+    return self.sur_curr
 
   def clear_overlay(self): #WIP/unfinished
-    self.sur_func = None
+    self.sur_next = None
 
-  def set_next(self, next_func):
+  def set_next(self, next_func=None, overlay=None, overlay_opacity=None):
     """Sets the next function to be displayed."""
-    self.next_func = next_func
-    #print(next_func)
+    if next_func:
+      self.next_func = next_func
+    if overlay:
+      self.sur_next = overlay
+      if overlay_opacity:
+        self.overlay_opacity = overlay_opacity
+      else:
+        self.overlay_opacity = .75
+    else:
+      self.clear_overlay()
 
   def set_strip(self, strip):
     """Sets the LED strip instance."""
@@ -123,6 +137,10 @@ class QuickChange:
     """Wipe color across display a pixel at a time."""
     return self.color_wipe_to_handle(j, (0,255,0))
 
+  def color_wipe_to_handle_white(self, j):
+    """Wipe color across display a pixel at a time."""
+    return self.color_wipe_to_handle(j, (255,255,255))
+
   def theatre_chase_white(self, j):
     """Movie theatre light style chaser animation."""
     return self.theatre_chase(j, (255,255,255))
@@ -154,6 +172,10 @@ class QuickChange:
     """Sets the color of all pixels."""
     return self.set_color(j, (0,255,0))
 
+  def set_color_black(self, j):
+    """Sets the color of all pixels."""
+    return self.set_color(j, (0,0,0))
+#----------------------------------------------------------------------------------------------------
   def rainbow(self, j):
     """Draw rainbow that fades across all pixels at once."""
     _data = []
@@ -197,11 +219,10 @@ class QuickChange:
     """Movie theatre light style chaser animation."""
     _data = []
     for i in range(self.strip.numPixels()):
-      _data.append((0,0,0))
-    for i in range(self.strip.numPixels()):
+      _data.append(color2)
+    for i in range(self.strip.numPixels()-1):
       if i%3==0:
         _data[i+j%3] = color1
-        _data[i+(j - 1)%3] = color2
     return _data
 
   def color_wipe(self, j, color):
@@ -255,12 +276,12 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_UNLOCKING(self):
     self.set_gui_state("MAIN_DOOR_UNLOCKING")
-    self.qc.set_next(self.qc.color_wipe_to_handle_green)
+    self.qc.set_next(overlay=self.qc.color_wipe_to_handle_white)
 
   def INVALID_KEY(self):
     self.set_gui_state("INVALID_KEY")
-    self.qc.set_next(self.qc.flash_colors_red_black)
-    time.sleep(2)
+    self.qc.set_next(overlay=self.qc.flash_colors_red_black)
+    time.sleep(1.5)
     self.set_state(self.prev_state)
 
   def MAIN_DOOR_FORCED_OPEN(self):
