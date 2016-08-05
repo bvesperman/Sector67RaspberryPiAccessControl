@@ -12,10 +12,11 @@ import random
 
  
 class QuickChange:
-  def __init__(self, handle_pixel=20, trans_time=2):
+  def __init__(self, handle_pixel=20, trans_time=1.5):
+    self.time_0 = None
+    self.wait_ms = 50
     self.curr_func = self.color_wipe_blue
     self.set_next(self.color_wipe_blue)
-    self.wait_ms = 50
     self.handle_pixel = handle_pixel
     self.trans_time = float(trans_time)
 
@@ -27,34 +28,46 @@ class QuickChange:
 
   def main(self):
     j = 0 #iterator for all functions run by main
-    _data_out = []
-    self.time_0 = None
     while True:
       if self.curr_func == self.next_func:
         _data_out = self.curr_func(j)
       else:
-        if not isinstance(self.time_0, float): #if starting transition
-          print('starting transition...')
-          self.time_0 = time.time()
-        self.duration = time.time() - self.time_0
-        self._data_curr_func = self.curr_func(j)
-        self._data_next_func = self.next_func(j)
-        if self.duration >= self.trans_time: #if the transition is over
-          print('transition complete.')
+        _data_out = self.mix(j, self.curr_func(j), self.next_func(j), self.fade_multipliers(self.trans_time))
+        if not self.time_0:
           self.curr_func = self.next_func
-          _data_out = self._data_next_func
-          self.time_0 = None
-        else:
-          for i in range(self.strip.numPixels()):
-            ktemp = []
-            for v in range(3):
-              ktemp.append((1 - self.duration/self.trans_time)*self._data_curr_func[i][v] + (self.duration/self.trans_time)*self._data_next_func[i][v])
-            _data_out[i] = ktemp
+      if self.sur_func:
+        _data_out = self.mix(j, _data_out, self.sur_func.func(j), (1,self.sur_func.get_multiplier()))
+        print(_data_out)
+        if self.sur_func.is_finished():
+          self.sur_func = None
       self.update_strip(_data_out)
       time.sleep(self.wait_ms/1000.0)
       j += 1
       if j >= self.strip.numPixels()*18000:
         j=0
+
+  def fade_multipliers(self, duration): #! if there are multiple fades active/ this is called when another fade is in progress, it will use its time. self.time_0  and self.fade_running conflict
+    """Returns a tuple of two multipliers; used to weight color values."""
+    if not self.time_0: #if fade not active
+      self.time_0 = time.time()
+    self.duration = time.time() - self.time_0
+    if self.duration >= duration: #if fade complete
+      self.time_0 = None
+      return (0,1)
+    else:
+      return (1. - self.duration/duration, self.duration/duration)
+
+  def mix(self, j, data1, data2, multipliers=(1,.5)):
+    """Displays multiple functions at once, weighted with the multipliers."""
+    _data = []
+    for i in range(self.strip.numPixels()):
+      color = []
+      for v in range(3):
+        color.append(multipliers[0]*data1[i][v] + multipliers[1]*data2[i][v])
+        if color[-1] > 255:
+          color[-1] = 255
+      _data.append(color)
+    return _data
 
   def set_next(self, next_func):
     """Sets the next function to be displayed."""
@@ -272,13 +285,13 @@ class BlinkenLights(StateMachine):
         self.set_state(self.INVALID_KEY)
       if ev['event'] ==    "MAIN_DOOR_STUCK_OPEN":
         self.set_state(self.MAIN_DOOR_STUCK_OPEN)
-      self.do_state()
+      self.do_func()
 
   def set_gui_state(self, state):
     if self.gui:
       self.gui_state.set(state)
 
-  def do_state(self):
+  def do_func(self):
     if self.curr_state != self.state:
       self.prev_state = self.state
       self.state = self.curr_state
@@ -290,7 +303,7 @@ class BlinkenLights(StateMachine):
   def set_state(self, state):
     self.curr_state = state
 
-  def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel, stuck_open_timeout):
+  def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel, stuck_open_timeout, trans_time):
     self.log = logging.getLogger("BlinkenLights")
     self.out_queue = out_queue
     self.name = name
@@ -303,6 +316,7 @@ class BlinkenLights(StateMachine):
     self.led_brightness = int(led_brightness) # Set to 0 for darkest and 255 for brightest
     self.led_invert = led_invert.lower() in ("yes", "true", "t", "1")  # True to invert the signal (when using NPN transistor level shift)
     self.stuck_open_timeout = int(stuck_open_timeout)
+    self.trans_time = float(trans_time)
     self.gui = False
     self.state = None
     self.prev_state = None
@@ -334,7 +348,7 @@ class BlinkenLights(StateMachine):
     # Intialize the library (must be called once before other functions).
     self.strip.begin()
     self.log.debug("start called")
-    self.qc = QuickChange(self.handle_pixel)
+    self.qc = QuickChange(self.handle_pixel, self.trans_time)
     self.qc.set_strip(self.strip)
     self.qc.stuck_open_timeout = self.stuck_open_timeout
     self.thread = threading.Thread(target=self.qc.main)
