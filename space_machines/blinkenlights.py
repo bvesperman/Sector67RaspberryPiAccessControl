@@ -46,16 +46,21 @@ class QuickChange:
       if self.sur_curr or self.sur_next:
         if self.sur_curr == self.sur_next:
           _data_out = self.mix(j, _data_out, self.sur_curr(j), (1 - self.overlay_opacity,self.overlay_opacity))
+          print('test')
         elif self.sur_curr:
           sur_temp = self.mix(j, self.sur_curr(j), self.set_color_black(j), self.fade_multipliers(self.trans_time))
           sur_temp = self.blank_zeros(sur_temp)
           _data_out = self.mix(j, _data_out, sur_temp, (1 - self.overlay_opacity,self.overlay_opacity))
+          print(self.time_0)
           if not self.time_0:
             self.sur_curr = self.sur_next
         else:
+          print('*{}'.format(self.time_0))
           sur_temp = self.mix(j, self.set_color_black(j), self.sur_next(j), self.fade_multipliers(self.trans_time))
           sur_temp = self.blank_zeros(sur_temp)
-          _data_out = self.mix(j, _data_out, sur_temp, (1 - self.overlay_opacity*self.fade_multipliers(self.trans_time)[0],self.overlay_opacity))
+          if not self.time_0:
+            self.sur_curr = self.sur_next
+          _data_out = self.mix(j, _data_out, sur_temp, (1 - (self.fade_multipliers(self.trans_time)[1])*self.overlay_opacity, (self.fade_multipliers(self.trans_time)[1])*self.overlay_opacity))
           if not self.time_0:
             self.sur_curr = self.sur_next
 
@@ -320,7 +325,7 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
-    self.qc.set_next(self.qc.color_wipe_blue)
+    self.qc.set_next(overlay=self.qc.color_wipe_to_handle_white)
 
   def MAIN_DOOR_STUCK_OPEN(self):
     self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
