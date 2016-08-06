@@ -17,7 +17,7 @@ class QuickChange:
     self.wait_ms = 50
     self.sur_curr = None
     self.sur_next = None
-    self.overlay_opacity = .75
+    self.overlay_opacity = .50
     self.curr_func = self.color_wipe_blue
     self.set_next(self.color_wipe_blue)
     self.handle_pixel = handle_pixel
@@ -26,7 +26,10 @@ class QuickChange:
   def update_strip(self, data):
     """Updates the strip then shows the new strip."""
     for i in range(self.strip.numPixels()):
-      self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
+      if not data[i]:
+        self.strip.setPixelColor(i, self.Color(0,0,0))
+      else:
+        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
     self.strip.show()
 
   def main(self):
@@ -40,15 +43,22 @@ class QuickChange:
         if not self.time_0:
           self.curr_func = self.next_func
 
+      if self.sur_curr or self.sur_next:
+        if self.sur_curr == self.sur_next:
+          _data_out = self.mix(j, _data_out, self.sur_curr(j), (1 - self.overlay_opacity,self.overlay_opacity))
+        elif self.sur_curr:
+          sur_temp = self.mix(j, self.sur_curr(j), self.set_color_black(j), self.fade_multipliers(self.trans_time))
+          sur_temp = self.blank_zeros(sur_temp)
+          _data_out = self.mix(j, _data_out, sur_temp, (1 - self.overlay_opacity,self.overlay_opacity))
+          if not self.time_0:
+            self.sur_curr = self.sur_next
+        else:
+          sur_temp = self.mix(j, self.set_color_black(j), self.sur_next(j), self.fade_multipliers(self.trans_time))
+          sur_temp = self.blank_zeros(sur_temp)
+          _data_out = self.mix(j, _data_out, sur_temp, (1 - self.overlay_opacity*self.fade_multipliers(self.trans_time)[0],self.overlay_opacity))
+          if not self.time_0:
+            self.sur_curr = self.sur_next
 
-      if self.sur_curr == self.sur_next:
-        if self.sur_curr:
-          _data_out = self.mix(j, _data_out, self.sur_curr(j), (1,self.overlay_opacity))
-      else:
-        sur_temp = self.mix(j, self.sur_curr(j) if self.sur_curr else self.set_color_black(j), self.sur_next(j) if self.sur_next else self.set_color_black(j), self.fade_multipliers(self.trans_time))
-        _data_out = self.mix(j, _data_out, sur_temp, (1,self.overlay_opacity))
-        if not self.time_0:
-          self.sur_curr = self.sur_next
 
       self.update_strip(_data_out)
       time.sleep(self.wait_ms/1000.0)
@@ -56,7 +66,19 @@ class QuickChange:
       if j >= self.strip.numPixels()*18000:
         j=0
 
-  def fade_multipliers(self, duration): #! if there are multiple fades active/ this is called when another fade is in progress, it will use its time. self.time_0  and self.fade_running conflict
+  def blank_zeros(self, list_):
+    for index, item in enumerate(list_):
+      if item == (0,0,0):
+        list_[index] = None
+    return list_
+
+  def zero_blanks(self, list_):
+    for index, item in enumerate(list_):
+      if not item:
+        list_[index] = (0,0,0)
+    return list_
+
+  def fade_multipliers(self, duration): #! if there are multiple fades active/ this is called when another fade is in progress, it will use its time. self.time_0 conflict
     """Returns a tuple of two multipliers; used to weight color values."""
     if not self.time_0: #if fade not active
       self.time_0 = time.time()
@@ -67,22 +89,30 @@ class QuickChange:
     else:
       return (1. - self.duration/duration, self.duration/duration)
 
-  def mix(self, j, data1, data2, multipliers=(.85,.15)):
+  def mix(self, j, data1, data2, multipliers=(.50,.50)):
     """Displays multiple functions at once, weighted with the multipliers."""
     _data = []
     for i in range(self.strip.numPixels()):
       color = []
-      for v in range(3):
-        color.append(multipliers[0]*data1[i][v] + multipliers[1]*data2[i][v])
-        if color[-1] > 255:
-          color[-1] = 255
+      if not data1[i] and not data2[i]:
+        color = None
+      elif not data1[i]:
+        color = data2[i]
+      elif not data2[i]:
+        color = data1[i]
+      else:
+        for v in range(3):
+          color.append(multipliers[0]*data1[i][v] + multipliers[1]*data2[i][v])
+          if color[-1] > 255:
+            color[-1] = 255
+      if color: color = tuple(color)
       _data.append(color)
     return _data
 
-  def get_overlay(self): #!WIP/unfinished
+  def get_overlay(self):
     return self.sur_curr
 
-  def clear_overlay(self): #WIP/unfinished
+  def clear_overlay(self):
     self.sur_next = None
 
   def set_next(self, next_func=None, overlay=None, overlay_opacity=None):
@@ -194,7 +224,7 @@ class QuickChange:
     handle = self.handle_pixel
     _data = []
     for i in range(self.strip.numPixels()):
-      _data.append((0,0,0))
+      _data.append(None)
     _data[handle - (-j)%pointing] = color
     _data[handle + (-j)%pointing] = color
     return _data
@@ -215,7 +245,7 @@ class QuickChange:
           _data.append(color1)
     return _data
 
-  def theatre_chase(self, j, color1, color2=(0,0,0)):
+  def theatre_chase(self, j, color1, color2=None):
     """Movie theatre light style chaser animation."""
     _data = []
     for i in range(self.strip.numPixels()):
@@ -229,7 +259,7 @@ class QuickChange:
     """Wipe color across display a pixel at a time."""
     _data = []
     for i in range(self.strip.numPixels()):
-      _data.append((0,0,0))
+      _data.append(None)
     _data[j%self.strip.numPixels()] = color
     return _data
 
