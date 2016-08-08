@@ -110,7 +110,7 @@ class BlinkenLights(StateMachine):
     label = Label(frame, textvariable = self.gui_state, justify=LEFT)
     label.pack(side=LEFT)
     self.info_frame = frame
-    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5, bg='black')
+    frame2 = Frame(root, padx=5, pady=5, bg='black')
     frame2.pack(fill=X)
     self.wait_ms = 50
     self.strip = MockStrip(self.led_count, frame2)
