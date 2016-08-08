@@ -12,11 +12,6 @@ import random
 from MockStrip import MockStrip
 
 
-
-
-
-
-
 class Layer:
   """Manages a layer of the lights."""
   def __init__(self, None_func, curr_func, opacity, trans_time):
@@ -103,16 +98,6 @@ class Layer:
     self.next_func = self.None_func
 
 
-
-
-
-
-
-
-
-
-    
- 
 class QuickChange:
   def __init__(self, handle_pixel=20, trans_time=1.5):
     self.time_0 = None
@@ -121,8 +106,8 @@ class QuickChange:
     self.trans_time = float(trans_time)
 
   def main(self):
-    self.Layer_0 = Layer(self.set_color_None, self.rainbow_cycle, 1, self.trans_time)
-    self.Layer_1 = Layer(self.set_color_None, self.set_color_None, .5, self.trans_time)
+    self.Layer_0 = Layer(None_func=self.set_color_None, curr_func=self.rainbow_cycle, opacity=1, trans_time=self.trans_time)
+    self.Layer_1 = Layer(None_func=self.set_color_None, curr_func=self.set_color_None, opacity=.65, trans_time=self.trans_time)
     j = 0 #iterator for all functions run by main
     while True:
       _data_out = self.stack_layers(j, self.Layer_0, self.Layer_1)
@@ -353,13 +338,14 @@ class BlinkenLights(StateMachine):
 
   def INVALID_KEY(self):
     self.set_gui_state("INVALID_KEY")
-    #self.qc.Layer_1.set_next(self.qc.flash_colors_red_black)
+    self.qc.Layer_1.set_next(self.qc.flash_colors_red_black)
     time.sleep(1.5)
     self.set_state(self.prev_state)
 
   def MAIN_DOOR_FORCED_OPEN(self):
     self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
     self.qc.Layer_0.set_next(self.qc.flash_colors_blue_red)
+    self.qc.Layer_1.clear()
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
@@ -369,6 +355,7 @@ class BlinkenLights(StateMachine):
   def MAIN_DOOR_STUCK_OPEN(self):
     self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
     self.qc.Layer_0.set_next(self.qc.flash_colors_red_black)
+    self.qc.Layer_1.clear()
 
   def MAIN_DOOR_CLOSED(self):
     self.set_gui_state("MAIN_DOOR_CLOSED")
