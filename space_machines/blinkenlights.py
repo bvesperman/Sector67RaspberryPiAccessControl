@@ -9,99 +9,154 @@ if sys.platform=='linux2':
   from neopixel import *
 import math
 import random
+from MockStrip import MockStrip
 
- 
-class QuickChange:
-  def __init__(self, handle_pixel=20, trans_time=1.5):
-    self.time_0 = None
-    self.wait_ms = 50
-    self.sur_curr = None
-    self.sur_next = None
-    self.overlay_opacity = .50
-    self.curr_func = self.color_wipe_blue
-    self.set_next(self.color_wipe_blue)
-    self.handle_pixel = handle_pixel
+
+
+
+
+
+
+class Layer:
+  """Manages a layer of the lights."""
+  def __init__(self, None_func, curr_func, opacity, trans_time):
     self.trans_time = float(trans_time)
+    self.opacity = opacity
+    self.time_0 = None
+    self.curr_func = curr_func
+    self.set_next(self.curr_func)
+    self.None_func = None_func
+    self.func_opacities = (1,1)
 
-  def update_strip(self, data):
-    """Updates the strip then shows the new strip."""
-    for i in range(self.strip.numPixels()):
-      if not data[i]:
-        self.strip.setPixelColor(i, self.Color(0,0,0))
-      else:
-        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
-    self.strip.show()
-
-  def main(self):
-    j = 0 #iterator for all functions run by main
-    while True:
-
+  def get_data(self, j):
+    """Returns the data of the layer at iteration j."""
+    if (self.curr_func or self.next_func):
       if self.curr_func == self.next_func:
         _data_out = self.curr_func(j)
       else:
-        _data_out = self.mix(j, self.curr_func(j), self.next_func(j), self.fade_multipliers(self.trans_time))
+        _data_out = self.mix(self.curr_func(j), self.next_func(j), self.fade_weights(self.trans_time))
         if not self.time_0:
           self.curr_func = self.next_func
+      return _data_out
 
-      if self.sur_curr or self.sur_next:
-        if self.sur_curr == self.sur_next:
-          _data_out = self.mix(j, _data_out, self.sur_curr(j), (1 - self.overlay_opacity,self.overlay_opacity))
-          print('test')
-        elif self.sur_curr:
-          sur_temp = self.mix(j, self.sur_curr(j), self.set_color_black(j), self.fade_multipliers(self.trans_time))
-          sur_temp = self.blank_zeros(sur_temp)
-          _data_out = self.mix(j, _data_out, sur_temp, (1 - self.overlay_opacity,self.overlay_opacity))
-          print(self.time_0)
-          if not self.time_0:
-            self.sur_curr = self.sur_next
-        else:
-          print('*{}'.format(self.time_0))
-          sur_temp = self.mix(j, self.set_color_black(j), self.sur_next(j), self.fade_multipliers(self.trans_time))
-          sur_temp = self.blank_zeros(sur_temp)
-          if not self.time_0:
-            self.sur_curr = self.sur_next
-          _data_out = self.mix(j, _data_out, sur_temp, (1 - (self.fade_multipliers(self.trans_time)[1])*self.overlay_opacity, (self.fade_multipliers(self.trans_time)[1])*self.overlay_opacity))
-          if not self.time_0:
-            self.sur_curr = self.sur_next
-
-
-      self.update_strip(_data_out)
-      time.sleep(self.wait_ms/1000.0)
-      j += 1
-      if j >= self.strip.numPixels()*18000:
-        j=0
-
-  def blank_zeros(self, list_):
-    for index, item in enumerate(list_):
-      if item == (0,0,0):
-        list_[index] = None
-    return list_
-
-  def zero_blanks(self, list_):
-    for index, item in enumerate(list_):
-      if not item:
-        list_[index] = (0,0,0)
-    return list_
-
-  def fade_multipliers(self, duration): #! if there are multiple fades active/ this is called when another fade is in progress, it will use its time. self.time_0 conflict
+  def fade_weights(self, duration): #! if there are multiple fades active/ this is called when another fade is in progress, it will use its time. self.time_0 conflict
     """Returns a tuple of two multipliers; used to weight color values."""
     if not self.time_0: #if fade not active
       self.time_0 = time.time()
     self.duration = time.time() - self.time_0
     if self.duration >= duration: #if fade complete
       self.time_0 = None
-      return (0,1)
+      temp = (0,1)
+      self.func_opacities = temp
+      return temp
     else:
-      return (1. - self.duration/duration, self.duration/duration)
+      temp = (1. - self.duration/duration, self.duration/duration)
+      self.func_opacities = temp
+      return temp
 
-  def mix(self, j, data1, data2, multipliers=(.50,.50)):
+  def mix(self, data1, data2, multipliers=(.50,.50)):
+    """Displays multiple functions at once, weighted with the multipliers (m1, m2).
+    If a color value is (0,0,0) it will mix the other color; if it is 'None' it will simply yield the other color.
+    Both being 'None' yields 'None'."""
+    _data = []
+    for i in range(len(data1)): #! if data1 and data2 are not the same length, this could be problematic (they should always be the same though).
+      color = []
+      if not (data1[i] or data2[i]):
+        color = None
+      else:
+        if not data1[i]: data1[i] = (0,0,0)
+        if not data2[i]: data2[i] = (0,0,0)
+        for v in range(3):
+          color.append(multipliers[0]*data1[i][v] + multipliers[1]*data2[i][v])
+          if color[-1] > 255:
+            color[-1] = 255
+      if color: color = tuple(color)
+      _data.append(color)
+    return _data
+
+  def set_next(self, next_func):
+    """Sets the next function to be displayed."""
+    self.next_func = next_func
+
+  def get_next(self):
+    """Returns the next function of the layer."""
+    return self.next_func
+
+  def set_opacity(self, opacity):
+    """Sets the opacity of the layer, where 0 is clear and 1 is opaque."""
+    self.opacity = opacity
+
+  def get_opacity(self):
+    """Returns the current opacity of the layer."""
+    if self.curr_func == self.next_func == self.None_func:
+      curr = 0
+    elif self.curr_func == self.next_func:
+      curr = 1
+    elif self.curr_func == self.None_func:
+      curr = self.func_opacities[1]
+    else:
+      curr = self.func_opacities[0]
+    return curr*self.opacity
+
+  def clear(self):
+    """Resets the layer to the 'None' function. (filled with 'None')"""
+    self.next_func = self.None_func
+
+
+
+
+
+
+
+
+
+
+    
+ 
+class QuickChange:
+  def __init__(self, handle_pixel=20, trans_time=1.5):
+    self.time_0 = None
+    self.wait_ms = 50
+    self.handle_pixel = handle_pixel
+    self.trans_time = float(trans_time)
+
+  def main(self):
+    self.Layer_0 = Layer(self.set_color_None, self.rainbow_cycle, 1, self.trans_time)
+    self.Layer_1 = Layer(self.set_color_None, self.set_color_None, .5, self.trans_time)
+    j = 0 #iterator for all functions run by main
+    while True:
+      _data_out = self.stack_layers(j, self.Layer_0, self.Layer_1)
+      self.update_strip(_data_out)
+      time.sleep(self.wait_ms/1000.0)
+      j += 1
+      if j >= self.strip.numPixels()*18000:
+        j=0
+
+  def update_strip(self, data):
+    """Updates the strip then shows the new strip."""
+    for i in range(self.strip.numPixels()):
+      if not (data or data[i]):
+        self.strip.setPixelColor(i, self.Color(0,0,0))
+      else:
+        self.strip.setPixelColor(i, self.Color(*[int(round(n)) for n in data[i]]))
+    self.strip.show()
+
+  def stack_layers(self, j, *layers):
     """Displays multiple functions at once, weighted with the multipliers."""
+    _data = self.mix(self.set_color_None(j), layers[0].get_data(j), (1 - layers[0].get_opacity(), layers[0].get_opacity()))
+    for i in range(1, len(layers)):
+      _data = self.mix(_data, layers[i].get_data(j), (1 - layers[i].get_opacity(), layers[i].get_opacity()))
+      #print(1 - layers[i].get_opacity(), layers[i].get_opacity())
+    return _data
+
+  def mix(self, data1, data2, multipliers):
+    """Displays multiple functions at once, weighted with the multipliers (m1, m2).
+    If a color value is (0,0,0) it will mix the other color; if it is 'None' it will simply yield the other color.
+    Both being 'None' yields 'None'."""
     _data = []
     for i in range(self.strip.numPixels()):
       color = []
-      if not data1[i] and not data2[i]:
-        color = None
-      elif not data1[i]:
+      if not data1[i]:
         color = data2[i]
       elif not data2[i]:
         color = data1[i]
@@ -114,32 +169,9 @@ class QuickChange:
       _data.append(color)
     return _data
 
-  def get_overlay(self):
-    return self.sur_curr
-
-  def clear_overlay(self):
-    self.sur_next = None
-
-  def set_next(self, next_func=None, overlay=None, overlay_opacity=None):
-    """Sets the next function to be displayed."""
-    if next_func:
-      self.next_func = next_func
-    if overlay:
-      self.sur_next = overlay
-      if overlay_opacity:
-        self.overlay_opacity = overlay_opacity
-      else:
-        self.overlay_opacity = .75
-    else:
-      self.clear_overlay()
-
   def set_strip(self, strip):
     """Sets the LED strip instance."""
     self.strip = strip
-
-  def ColorRGB(self, color):
-    """Returns color as a truple of integers (R,G,B)."""
-    return (int(bin(color)[2:].zfill(24)[:-16],2), int(bin(color)[2:].zfill(24)[-16:-8],2), int(bin(color)[2:].zfill(24)[-8:],2))
 
   def Color(self,red, green, blue):
     """Convert the provided red, green, blue color to a 24-bit color value.
@@ -189,33 +221,39 @@ class QuickChange:
     return self.flash_colors(j, (255,0,0), (96,0,0))
  
   def color_wipe_red(self, j):
-    """Wipe color across display a pixel at a time."""
+    """Wipe red across display a pixel at a time."""
     return self.color_wipe(j, (255, 0, 0))
 
   def color_wipe_green(self, j):
-    """Wipe color across display a pixel at a time."""
+    """Wipe green across display a pixel at a time."""
     return self.color_wipe(j, (0, 255, 0))
 
   def color_wipe_blue(self, j):
-    """Wipe color across display a pixel at a time."""
+    """Wipe blue across display a pixel at a time."""
     return self.color_wipe(j, (0, 0, 255))
 
   def set_color_red(self, j):
+    """Sets the color of all pixels to red."""
     return self.set_color(j, (255, 0, 0))
 
   def set_color_green(self, j):
-    """Sets the color of all pixels."""
+    """Sets the color of all pixels to green."""
     return self.set_color(j, (0,255,0))
 
   def set_color_black(self, j):
-    """Sets the color of all pixels."""
+    """Sets the color of all pixels to black."""
     return self.set_color(j, (0,0,0))
+
+  def set_color_None(self, j):
+    """Sets the color of all pixels to 'None'."""
+    return self.set_color(j, None)
 #----------------------------------------------------------------------------------------------------
   def rainbow(self, j):
     """Draw rainbow that fades across all pixels at once."""
     _data = []
     for i in range(self.strip.numPixels()): #initialize pixel data
       _data.append(self.wheel((i+j) & 255))
+    return _data
 
   def rainbow_cycle(self, j):
     """Draw rainbow that uniformly distributes itself across all pixels."""
@@ -311,29 +349,31 @@ class BlinkenLights(StateMachine):
 
   def MAIN_DOOR_UNLOCKING(self):
     self.set_gui_state("MAIN_DOOR_UNLOCKING")
-    self.qc.set_next(overlay=self.qc.color_wipe_to_handle_white)
+    self.qc.Layer_1.set_next(self.qc.color_wipe_to_handle_white)
 
   def INVALID_KEY(self):
     self.set_gui_state("INVALID_KEY")
-    self.qc.set_next(overlay=self.qc.flash_colors_red_black)
+    #self.qc.Layer_1.set_next(self.qc.flash_colors_red_black)
     time.sleep(1.5)
     self.set_state(self.prev_state)
 
   def MAIN_DOOR_FORCED_OPEN(self):
     self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
-    self.qc.set_next(self.qc.flash_colors_blue_red)
+    self.qc.Layer_0.set_next(self.qc.flash_colors_blue_red)
 
   def MAIN_DOOR_OPENED(self):
     self.set_gui_state("DOOR_OPENED")
-    self.qc.set_next(overlay=self.qc.color_wipe_to_handle_white)
+    self.qc.Layer_0.set_next(self.qc.rainbow)
+    self.qc.Layer_1.clear()
 
   def MAIN_DOOR_STUCK_OPEN(self):
     self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
-    self.qc.set_next(self.qc.flash_colors_red_black)
+    self.qc.Layer_0.set_next(self.qc.flash_colors_red_black)
 
   def MAIN_DOOR_CLOSED(self):
     self.set_gui_state("MAIN_DOOR_CLOSED")
-    self.qc.set_next(self.qc.rainbow_cycle)
+    self.qc.Layer_0.set_next(self.qc.rainbow_cycle)
+    self.qc.Layer_1.clear()
 
   def IDLE(self):
     self.set_gui_state("IDLE")
@@ -422,61 +462,6 @@ class BlinkenLights(StateMachine):
     self.thread.start()
     self.log.debug("thread started")
     super(BlinkenLights, self).start(self.IDLE)
-
-
-class MockStrip:
-  def __init__(self, led_count, frame):
-    self.led_count = led_count
-    self.rand = random.Random()
-    self.pending = []
-    self.labels = []
-
-    for i in range(led_count):
-      self.pending.append("#000000")
-
-    for i in range(led_count):
-      lbl = Label(frame, text=str(i), width = 2)
-      self.labels.append(lbl)
-      lbl.pack(side=LEFT, expand = True, fill = X)
-      lbl.configure(bg="#000000")
-
-    self.show() 
-
-  def show(self):
-    i=0
-    for label in self.labels:
-      #print "i is " + str(i)
-      #print "color is " + self.pending[i]
-      label.configure(bg=self.pending[i])
-      i=i+1
-
-  def begin(self):# mimicing neopixel;
-    pass
-
-  def setPixelColor(self, pixel, color):
-    self.pending[pixel]=self.tk_color(color)
-
-  def getPixelColor(self, pixel):
-    return self.pending[pixel]
-
-  def getPixelColorRGB(self, pixel):
-    n = self.pending[pixel][1:]
-    n = int(n, base=16)
-    c = lambda: None
-    setattr(c, 'r', n >> 16 & 0xff)
-    setattr(c, 'g', n >> 8  & 0xff) 
-    setattr(c, 'b', n & 0xff)
-    return c
-
-  def tk_color(self,color):
-    red=(color & 0xff0000) >> 16
-    green=(color & 0x00ff00) >> 8
-    blue=(color & 0x0000ff)
-    newcolor='#%02X%02X%02X' % (red,green,blue)
-    return newcolor
-
-  def numPixels(self):
-    return self.led_count
 
 def main():
   out_queue = Queue.Queue()
