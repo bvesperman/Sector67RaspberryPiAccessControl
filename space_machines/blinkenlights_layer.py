@@ -6,6 +6,7 @@ class Layer:
   def __init__(self, None_func, curr_func, opacity, trans_time):
     self.trans_time = float(trans_time)
     self.opacity = opacity
+    self._opacity_default = opacity
     self.time_0 = None
     self.curr_func = curr_func
     self.set_next(self.curr_func)
@@ -69,6 +70,9 @@ class Layer:
   def set_opacity(self, opacity):
     """Sets the opacity of the layer, where 0 is clear and 1 is opaque."""
     self.opacity = opacity
+
+  def reset_opacity(self):
+    self.opacity = self._opacity_default
 
   def get_opacity(self):
     """Returns the current opacity of the layer."""

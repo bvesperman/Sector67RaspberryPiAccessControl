@@ -1,81 +1,11 @@
-import logging
-import time
-import Queue
-import threading
-import sys
-from Tkinter import *
-from pystates import StateMachine
-if sys.platform=='linux2':
-  from neopixel import *
+from blinkenlightsBase import *
 from MockStrip import MockStrip
 from blinkenlights_quickchange  import QuickChange
 
 
-class BlinkenLights(StateMachine):
 
-  def MAIN_DOOR_UNLOCKING(self):
-    self.set_gui_state("MAIN_DOOR_UNLOCKING")
-    self.qc.Layer_1.set_next(self.qc.color_wipe_to_handle_white)
 
-  def INVALID_KEY(self):
-    self.set_gui_state("INVALID_KEY")
-    self.qc.Layer_1.set_next(self.qc.flash_colors_red_black)
-    time.sleep(1.5)
-    self.set_state(self.prev_state)
-
-  def MAIN_DOOR_FORCED_OPEN(self):
-    self.set_gui_state("MAIN_DOOR_FORCED_OPEN")
-    self.qc.Layer_0.set_next(self.qc.flash_colors_blue_red)
-    self.qc.Layer_1.clear()
-
-  def MAIN_DOOR_OPENED(self):
-    self.set_gui_state("DOOR_OPENED")
-    self.qc.Layer_0.set_next(self.qc.rainbow)
-    self.qc.Layer_1.clear()
-
-  def MAIN_DOOR_STUCK_OPEN(self):
-    self.set_gui_state("MAIN_DOOR_STUCK_OPEN")
-    self.qc.Layer_0.set_next(self.qc.flash_colors_red_black)
-    self.qc.Layer_1.clear()
-
-  def MAIN_DOOR_CLOSED(self):
-    self.set_gui_state("MAIN_DOOR_CLOSED")
-    self.qc.Layer_0.set_next(self.qc.rainbow_cycle)
-    self.qc.Layer_1.clear()
-
-  def IDLE(self):
-    self.set_gui_state("IDLE")
-    while True:
-      ev = yield
-      if ev['event'] ==    "MAIN_DOOR_CLOSED":
-        self.set_state(self.MAIN_DOOR_CLOSED)
-      if ev['event'] ==    "MAIN_DOOR_UNLOCKING":
-        self.set_state(self.MAIN_DOOR_UNLOCKING)
-      if ev['event'] ==    "MAIN_DOOR_OPENED":
-        self.set_state(self.MAIN_DOOR_OPENED)
-      if ev['event'] ==    "MAIN_DOOR_FORCED_OPEN":
-        self.set_state(self.MAIN_DOOR_FORCED_OPEN)
-      if ev['event'] ==    "INVALID_KEY":
-        self.set_state(self.INVALID_KEY)
-      if ev['event'] ==    "MAIN_DOOR_STUCK_OPEN":
-        self.set_state(self.MAIN_DOOR_STUCK_OPEN)
-      self.do_func()
-
-  def set_gui_state(self, state):
-    if self.gui:
-      self.gui_state.set(state)
-
-  def do_func(self):
-    if self.curr_state != self.state:
-      self.prev_state = self.state
-      self.state = self.curr_state
-      self.curr_state()
-
-  def get_state(self):
-    return self.state
-
-  def set_state(self, state):
-    self.curr_state = state
+class BlinkenLights(blinkenlightsBase):
 
   def setup(self, out_queue, name, led_count, led_pin, led_freq_hz, led_dma, led_invert, led_brightness, handle_pixel, stuck_open_timeout, trans_time):
     self.log = logging.getLogger("BlinkenLights")
@@ -110,7 +40,7 @@ class BlinkenLights(StateMachine):
     label = Label(frame, textvariable = self.gui_state, justify=LEFT)
     label.pack(side=LEFT)
     self.info_frame = frame
-    frame2 = Frame(root, padx=5, pady=5, bg='black')
+    frame2 = LabelFrame(root, text=self.name, padx=5, pady=5, bg='black')
     frame2.pack(fill=X)
     self.wait_ms = 50
     self.strip = MockStrip(self.led_count, frame2)
@@ -129,18 +59,95 @@ class BlinkenLights(StateMachine):
     self.thread.setDaemon(True)
     self.thread.start()
     self.log.debug("thread started")
-    super(BlinkenLights, self).start(self.IDLE)
+    super(BlinkenLights, self).start(self.MAIN_DOOR_CLOSED)
 
-def main():
-  out_queue = Queue.Queue()
-  logging.basicConfig(level=logging.DEBUG)
-  name = "BLINKENLIGHTS"
-  machine = BlinkenLights(name=name)
-  machine.setup(out_queue, name=name, led_count=16, led_pin=18, led_freq_hz=800000, led_dma=5, led_invert="False", led_brightness=255, handle_pixel = 8, stuck_open_timeout = 15)
-  machine.start()
-  machine.send_message({"event": "MAIN_DOOR_UNLOCKING"})
 
-  time.sleep(15)
 
-if __name__=='__main__':
-  main()
+  # By Default - do nothing ON_MAIN_DOOR_CLOSED
+  def ON_MAIN_DOOR_CLOSED(self):
+    self.qc.Layer_0.set_next(self.qc.rainbow_cycle)
+    self.qc.Layer_1.clear()
+
+   
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_CLOSED_MAIN_DOOR_UNLOCKING(self):
+    """ While in MAIN_DOOR_CLOSED, a MAIN_DOOR_UNLOCKING message is recieved. """
+    pass
+      
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_CLOSED_MAIN_DOOR_OPENED(self):
+    """ While in MAIN_DOOR_CLOSED, a MAIN_DOOR_OPENED message is recieved. """
+    pass
+      
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_CLOSED_INVALID_KEY(self):
+    """ While in MAIN_DOOR_CLOSED, a INVALID_KEY message is recieved. """
+    pass
+      
+  
+  # By Default - do nothing ON_MAIN_DOOR_UNLOCKING
+  def ON_MAIN_DOOR_UNLOCKING(self):
+    self.qc.Layer_1.set_next(self.qc.color_wipe_to_handle_white)
+
+   
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_UNLOCKING_MAIN_DOOR_CLOSED(self):
+    """ While in MAIN_DOOR_UNLOCKING, a MAIN_DOOR_CLOSED message is recieved. """
+    pass
+      
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_UNLOCKING_MAIN_DOOR_OPENED(self):
+    """ While in MAIN_DOOR_UNLOCKING, a MAIN_DOOR_OPENED message is recieved. """
+    pass
+      
+  
+  # By Default - do nothing ON_INVALID_KEY
+  def ON_INVALID_KEY(self):
+    self.qc.Layer_1.set_next(self.qc.flash_colors_red_black)
+
+   
+  # By default - do nothing during transitions
+  def ON_INVALID_KEY_MAIN_DOOR_INVALID_TIMEOUT(self):
+    """ While in INVALID_KEY, a MAIN_DOOR_INVALID_TIMEOUT message is recieved. """
+    pass
+      
+  
+  # By Default - do nothing ON_MAIN_DOOR_STUCK_OPEN
+  def ON_MAIN_DOOR_STUCK_OPEN(self):
+    self.qc.Layer_0.set_next(self.qc.flash_colors_red_black)
+    self.qc.Layer_1.clear()
+
+   
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_STUCK_OPEN_MAIN_DOOR_CLOSED(self):
+    """ While in MAIN_DOOR_STUCK_OPEN, a MAIN_DOOR_CLOSED message is recieved. """
+    pass
+      
+  
+  # By Default - do nothing ON_MAIN_DOOR_OPENED
+  def ON_MAIN_DOOR_OPENED(self):
+    self.qc.Layer_0.set_next(self.qc.rainbow)
+    self.qc.Layer_1.clear()
+
+   
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_OPENED_MAIN_DOOR_CLOSED(self):
+    """ While in MAIN_DOOR_OPENED, a MAIN_DOOR_CLOSED message is recieved. """
+    pass
+      
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_TIMEOUT(self):
+    """ While in MAIN_DOOR_OPENED, a MAIN_DOOR_STUCK_TIMEOUT message is recieved. """
+    pass
+      
+  
+  # By Default - do nothing ON_MAIN_DOOR_FORCED_OPEN
+  def ON_MAIN_DOOR_FORCED_OPEN(self):
+    self.qc.Layer_0.set_next(self.qc.flash_colors_blue_red)
+    self.qc.Layer_1.clear()
+
+   
+  # By default - do nothing during transitions
+  def ON_MAIN_DOOR_FORCED_OPEN_MAIN_DOOR_UNLOCKING(self):
+    """ While in MAIN_DOOR_FORCED_OPEN, a MAIN_DOOR_UNLOCKING message is recieved. """
+    pass
