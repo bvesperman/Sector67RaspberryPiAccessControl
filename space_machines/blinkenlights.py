@@ -66,23 +66,24 @@ class BlinkenLights(blinkenlightsBase):
   # By Default - do nothing ON_MAIN_DOOR_CLOSED
   def ON_MAIN_DOOR_CLOSED(self):
     self.qc.Layer_0.set_next(self.qc.rainbow_cycle)
-    self.qc.Layer_1.clear()
+    self.qc.Layer_1.set_opacity(.3)
+    self.qc.Layer_1.set_next(self.qc.fireworks_white)
 
    
   # By default - do nothing during transitions
   def ON_MAIN_DOOR_CLOSED_MAIN_DOOR_UNLOCKING(self):
     """ While in MAIN_DOOR_CLOSED, a MAIN_DOOR_UNLOCKING message is recieved. """
-    pass
+    self.qc.Layer_1.reset_opacity()
       
   # By default - do nothing during transitions
   def ON_MAIN_DOOR_CLOSED_MAIN_DOOR_OPENED(self):
     """ While in MAIN_DOOR_CLOSED, a MAIN_DOOR_OPENED message is recieved. """
-    pass
+    self.qc.Layer_1.reset_opacity()
       
   # By default - do nothing during transitions
   def ON_MAIN_DOOR_CLOSED_INVALID_KEY(self):
     """ While in MAIN_DOOR_CLOSED, a INVALID_KEY message is recieved. """
-    pass
+    self.qc.Layer_1.reset_opacity()
       
   
   # By Default - do nothing ON_MAIN_DOOR_UNLOCKING

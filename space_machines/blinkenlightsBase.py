@@ -100,7 +100,7 @@ class blinkenlightsBase(StateMachine):
         
   def MAIN_DOOR_OPENED(self):
     """  """
-    self.generate_message({"event": self.name + "_MAIN_DOOR_OPENED", "timeout": 15000})
+    self.generate_message({"event": self.name + "_MAIN_DOOR_OPENED"})
     self.set_gui_state("MAIN_DOOR_OPENED")
     self.log.debug("NEW STATE: MAIN_DOOR_OPENED - ")
     self.ON_MAIN_DOOR_OPENED();
@@ -113,8 +113,8 @@ class blinkenlightsBase(StateMachine):
         self.ON_MAIN_DOOR_OPENED_MAIN_DOOR_CLOSED()
         self.transition(self.MAIN_DOOR_CLOSED)
         
-      if ev['event'] == "MAIN_DOOR_STUCK_TIMEOUT":
-        self.ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_TIMEOUT()
+      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
+        self.ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_OPEN()
         self.transition(self.MAIN_DOOR_STUCK_OPEN)
         
   def MAIN_DOOR_FORCED_OPEN(self):
@@ -208,7 +208,7 @@ class blinkenlightsBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_TIMEOUT(self):
+  def ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_OPEN(self):
     """ While in MAIN_DOOR_OPENED, a MAIN_DOOR_STUCK_TIMEOUT message is recieved. """
     pass
       
