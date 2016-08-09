@@ -1,6 +1,6 @@
 import unittest
 
-class LightsTest(unittest.TestCase):
+class DoorTest(unittest.TestCase):
 	"""tests that the lights work"""
 	def setUp(self):
 		self.fizz = 'fizz'

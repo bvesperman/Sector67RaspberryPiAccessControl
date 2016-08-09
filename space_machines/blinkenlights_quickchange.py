@@ -1,4 +1,5 @@
 import time
+import random
 from blinkenlights_layer import Layer
 
 
@@ -7,6 +8,7 @@ class QuickChange:
     self.wait_ms = 50
     self.handle_pixel = handle_pixel
     self.trans_time = float(trans_time)
+    self.fireworks_points = [] #!temp solution..
 
   def main(self):
     self.Layer_0 = Layer(None_func = self.set_color_None, curr_func = self.rainbow_cycle, opacity = 1, trans_time = self.trans_time)
@@ -38,8 +40,9 @@ class QuickChange:
     return _data
 
   def mix(self, data1, data2, multipliers):
-    """Displays multiple functions at once, weighted with the multipliers (m1, m2).
-    If a color value is (0,0,0) it will mix the other color; if it is 'None' it will simply yield the other color.
+    """Displays multiple functions at once, weighted with the multipliers
+    (m1, m2). If a color value is (0,0,0) it will mix the other color;
+    if it is 'None' it will simply yield the other color.
     Both being 'None' yields 'None'."""
     _data = []
     for i in range(self.strip.numPixels()):
@@ -79,14 +82,14 @@ class QuickChange:
       pos -= 170
       return (0, pos * 3, 255 - pos * 3)
 
-#----------------------------------------------------------------------------------------------------
-  def fade_to_green(self, j):
-    """Fades to green."""
-    return self.fade_to_color(j, (0,255,0))
-
-  def fade_to_red(self, j):
-    """Fades to red."""
-    return self.fade_to_color(j, (255,0,0),fade_time=self.stuck_open_timeout)
+#-------------------------------------------------------------------------------
+  '''def fade_to_green(self, j):
+          """Fades to green."""
+          return self.fade_to_color(j, (0,255,0))
+      
+        def fade_to_red(self, j):
+          """Fades to red."""
+          return self.fade_to_color(j, (255,0,0),fade_time=self.stuck_open_timeout)'''
 
   def color_wipe_to_handle_green(self, j):
     """Wipe color across display a pixel at a time."""
@@ -135,7 +138,7 @@ class QuickChange:
   def set_color_None(self, j):
     """Sets the color of all pixels to 'None'."""
     return self.set_color(j, None)
-#----------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
   def rainbow(self, j):
     """Draw rainbow that fades across all pixels at once."""
     _data = []
@@ -150,7 +153,7 @@ class QuickChange:
       _data.append(self.wheel((i * 256 / self.strip.numPixels()) + j & 255))
     return _data
 
-  def color_wipe_to_handle(self, j, color, pointing=10): #Yet to be worked on. Completed simpler functions first.
+  def color_wipe_to_handle(self, j, color, pointing=10):
     """Wipe color across display a pixel at a time."""
     handle = self.handle_pixel
     _data = []
@@ -194,41 +197,75 @@ class QuickChange:
     _data[j%self.strip.numPixels()] = color
     return _data
 
-  '''def fade_to_color(self, j, color, rate=(5,5,5), fade_time=None):
-    """Fades to color."""
-    _data = []
-    #print("--------------------------------------------------")
-    if fade_time:
-      tot_frames = float((fade_time)/(self.wait_ms/1000.0)) #float((fade_time)/(frame_time + self.wait_ms/1000.0))
-      rate = (255/tot_frames,255/tot_frames,255/tot_frames)
-    for i in range(self.strip.numPixels()):
-      newcolor = []
-      curr_color = data[i]
-      print("{i}: {cc}".format(i=i, cc=curr_color))
-      for c in range(3):
-        tempcolor = None
-        if curr_color[c] < color[c] and curr_color[c] + rate[c] > color[c]:
-          #print("cc < c && cc + r > c")
-          pass
-        elif curr_color[c] > color[c] and curr_color[c] - rate[c] < color[c]:
-          #print("cc > c && cc - r < c")
-          pass
-        if curr_color[c] == color[c] \
-        or (curr_color[c] < color[c] and curr_color[c] + rate[c] > color[c]) \
-        or (curr_color[c] > color[c] and curr_color[c] - rate[c] < color[c]): # Is this actually more helpful than if statements in if statements?
-          tempcolor = color[c]
-        elif curr_color[c] < color[c]:
-          tempcolor = curr_color[c] + rate[c]
-        else:
-          tempcolor = curr_color[c] - rate[c]
-        newcolor.append(tempcolor)
-      _data[i] = newcolor
-      print("{i}: {nc}".format(i=i, nc=(newcolor)))
-    return _data'''.format(i=1,cc=1,nc=1)
-
   def set_color(self, j, color):
     """Sets the color of all pixels."""
     _data = []
     for i in range(self.strip.numPixels()):
       _data.append(color)
     return _data
+
+  '''def fireworks(self, j, color):
+          _data = []
+          for i in range(self.numPixels):
+            _data.append(None)
+      
+          if random.random() >.95 and len(self.fireworks_points)<3:
+            size = random.randint(1,10)
+            origin = random.randint(0, self.numPixels-1)
+            self.fireworks_points.append((size, origin, range(size)))
+          for n, (size, origin, a) in enumerate(self.fireworks_points):
+            if size < 1:
+              self.fireworks_points.remove((size, origin, a))
+            else:
+              _data[origin] = (215 + (size)*4, 215 + (size)*4, 215 + (size)*4)
+      
+              for i in range(a[0]):
+                if origin - i >= 0:
+                  _data[origin - i]= (215 + (size - i)*4, 215 + (size - i)*4, 215 + (size - i)*4)
+                if origin + i < len(_data):
+                  _data[origin + i]= (215 + (size - i)*4, 215 + (size - i)*4, 215 + (size - i)*4)
+              self.fireworks_points[n] = (size - 1 , origin, a[1:])
+      
+          return _data
+      
+        def fireworks_white(self, j):
+          return self.fireworks(j, (255,255,255))'''
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

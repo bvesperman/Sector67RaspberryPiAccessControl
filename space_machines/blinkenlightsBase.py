@@ -21,8 +21,7 @@ class blinkenlightsBase(StateMachine):
     self.out_queue = out_queue
     self.name = name
     self.gui = False
-  
-def set_gui_state(self, state):
+  def set_gui_state(self, state):
     if self.gui:
       self.gui_state.set(state)
 
@@ -100,7 +99,7 @@ def set_gui_state(self, state):
         
   def MAIN_DOOR_OPENED(self):
     """  """
-    self.generate_message({"event": self.name + "_MAIN_DOOR_OPENED", "timeout": 15000})
+    self.generate_message({"event": self.name + "_MAIN_DOOR_OPENED"})
     self.set_gui_state("MAIN_DOOR_OPENED")
     self.log.debug("NEW STATE: MAIN_DOOR_OPENED - ")
     self.ON_MAIN_DOOR_OPENED();
@@ -112,9 +111,8 @@ def set_gui_state(self, state):
       if ev['event'] == "MAIN_DOOR_CLOSED":
         self.ON_MAIN_DOOR_OPENED_MAIN_DOOR_CLOSED()
         self.transition(self.MAIN_DOOR_CLOSED)
-        
-      if ev['event'] == "MAIN_DOOR_STUCK_TIMEOUT":
-        self.ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_TIMEOUT()
+      if ev['event'] == "MAIN_DOOR_STUCK_OPEN":
+        self.ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_OPEN()
         self.transition(self.MAIN_DOOR_STUCK_OPEN)
         
   def MAIN_DOOR_FORCED_OPEN(self):
@@ -208,7 +206,7 @@ def set_gui_state(self, state):
     pass
       
   # By default - do nothing during transitions
-  def ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_TIMEOUT(self):
+  def ON_MAIN_DOOR_OPENED_MAIN_DOOR_STUCK_OPEN(self):
     """ While in MAIN_DOOR_OPENED, a MAIN_DOOR_STUCK_TIMEOUT message is recieved. """
     pass
       
