@@ -8,7 +8,7 @@ else
 	git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 	cd Sector67RaspberryPiAccessControl
 fi
-git checkout alt-pseudo-master
+git checkout Generation-Integration
 DIR=$(pwd)
 STARTNAME=run-space-machines.sh
 LOGNAME=s_m_logging.conf
