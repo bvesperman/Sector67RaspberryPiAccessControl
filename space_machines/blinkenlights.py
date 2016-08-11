@@ -1,6 +1,8 @@
 from blinkenlightsBase import *
 from MockStrip import MockStrip
 from blinkenlights_quickchange  import QuickChange
+if sys.platform=='linux2':
+  from neopixel import *
 
 
 
