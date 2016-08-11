@@ -1,5 +1,5 @@
 [Unit]
-Description=Sector67 Access Control
+Description=Space Machines Service
 After=multi-user.target
 
 [Service]
