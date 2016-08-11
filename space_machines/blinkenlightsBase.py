@@ -69,13 +69,15 @@ class blinkenlightsBase(StateMachine):
         
   def INVALID_KEY(self):
     """  """
-    self.generate_message({"event": self.name + "_INVALID_KEY", "timeout": 1500})
+    self.generate_message({"event": self.name + "_INVALID_KEY", "timeout": 2000})
     self.set_gui_state("INVALID_KEY")
     self.log.debug("NEW STATE: INVALID_KEY - ")
     self.ON_INVALID_KEY();
 
     # Wait for events
     while True:
+      if self.duration() > 2000/1000:
+        self.generate_message({"event": "MAIN_DOOR_INVALID_TIMEOUT"})
       ev = yield
       
       if ev['event'] == "MAIN_DOOR_INVALID_TIMEOUT":

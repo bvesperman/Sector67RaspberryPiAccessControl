@@ -66,8 +66,7 @@ class BlinkenLights(blinkenlightsBase):
   # By Default - do nothing ON_MAIN_DOOR_CLOSED
   def ON_MAIN_DOOR_CLOSED(self):
     self.qc.Layer_0.set_next(self.qc.rainbow_cycle)
-    self.qc.Layer_1.set_opacity(.3)
-    self.qc.Layer_1.set_next(self.qc.fireworks_white)
+    self.qc.Layer_1.clear()
 
    
   # By default - do nothing during transitions
