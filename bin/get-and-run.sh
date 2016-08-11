@@ -12,9 +12,9 @@ git checkout Generation-Integration
 DIR=$(pwd)
 STARTNAME=run-space-machines.sh
 LOGNAME=s_m_logging.conf
-PYTHON=$(which python)
+#PYTHON=$(which python)
 os='Linux raspberrypi'
-MAIN=$DIR/space_machines/main.py
+#MAIN=$DIR/space_machines/main.py
 kernalinfo=$(uname -a)
 chmod u+x $DIR/support/$STARTNAME
 if [[ "$kernalinfo" =~ "$os" ]]; then
@@ -30,7 +30,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	SERVICE=/lib/systemd/system/space_machines.service
 	apt-get install python-dev python-pip python-tk python-serial #vlc
 	sed -i.backup 's|.*BLANK_TIME=.*|#BLANK_TIME=0|; s|.*BLANK_DPMS=.*|#BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|#POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
-	sed -i.backup "s|#PYTHONPATH#|$PYTHON|; s|#FILEPATH#|$MAIN|; s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file
+	sed -i.backup "s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file #+ s|#FILEPATH#|$MAIN|; s|#PYTHONPATH#|$PYTHON|; 
 	sed -i.backup "s|#STARTPATH#|$START|" $SERVICE # enters the start up file path into the service file
 	chmod 644 $SERVICE
 	systemctl daemon-reload
@@ -49,8 +49,8 @@ else
 	CONF=$DIR/space_machines/$CONFNAME
 fi
 cd $DIR
-$PYTHON -m pip uninstall $DIR
-$PYTHON -m pip install $DIR
+python -m pip uninstall $DIR
+python -m pip install $DIR
 
 if [[ "$kernalinfo" =~ "$os" ]]; then
 	systemctl stop space_machines.service

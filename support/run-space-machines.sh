@@ -1,2 +1,2 @@
 #!/bin/bash
-#PYTHONPATH# #FILEPATH# #CONFPATH# #LOGPATH# 2>&1 > /dev/tty1
+python -m space_machines.main.py #CONFPATH# #LOGPATH# 2>&1 > /dev/tty1
