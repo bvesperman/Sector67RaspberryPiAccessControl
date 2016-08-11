@@ -26,7 +26,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	LOG=/etc/$LOGNAME
 	cp $DIR/support/$STARTNAME /usr/local/bin
 	START=/usr/local/bin/$STARTNAME
-	cp $DIR/bin/space_machines.service /lib/systemd/system/space_machines.service
+	cp $DIR/support/space_machines.service /lib/systemd/system/space_machines.service
 	SERVICE=/lib/systemd/system/space_machines.service
 	apt-get install python-dev python-pip python-tk python-serial #vlc
 	sed -i.backup 's|.*BLANK_TIME=.*|#BLANK_TIME=0|; s|.*BLANK_DPMS=.*|#BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|#POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
