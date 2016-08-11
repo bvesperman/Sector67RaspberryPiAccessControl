@@ -20,10 +20,21 @@ class blinkenlightsBase(StateMachine):
     self.log = logging.getLogger("blinkenlightsState")
     self.out_queue = out_queue
     self.name = name
-    self.gui = False
+    self.show_gui = False
+    self.timeout_ms = None
+
   def set_gui_state(self, state):
-    if self.gui:
+    if self.show_gui:
       self.gui_state.set(state)
+
+  def config_gui(self, root):
+    self.show_gui = True
+    frame = LabelFrame(root, text=self.name, padx=5, pady=5)
+    frame.pack(fill=X)
+    self.gui_state = StringVar()
+    self.gui_state.set("[STATE]")
+    label = Label(frame, textvariable = self.gui_state, justify=LEFT)
+    label.pack(side=LEFT)
 
   def MAIN_DOOR_CLOSED(self):
     """  """
@@ -70,13 +81,14 @@ class blinkenlightsBase(StateMachine):
   def INVALID_KEY(self):
     """  """
     self.generate_message({"event": self.name + "_INVALID_KEY", "timeout": 2000})
+    self.timeout_ms = 2000
     self.set_gui_state("INVALID_KEY")
     self.log.debug("NEW STATE: INVALID_KEY - ")
     self.ON_INVALID_KEY();
 
     # Wait for events
     while True:
-      if self.duration() > 2000/1000:
+      if self.duration() > self.timeout_ms/1000:
         self.generate_message({"event": "MAIN_DOOR_INVALID_TIMEOUT"})
       ev = yield
       
