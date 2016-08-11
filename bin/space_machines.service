@@ -1,9 +1,0 @@
-[Unit]
-Description=Sector67 Access Control
-After=multi-user.target
-
-[Service]
-ExecStart=#STARTPATH#
-
-[Install]
-WantedBy=multi-user.target

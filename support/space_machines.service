@@ -1,11 +1,9 @@
 [Unit]
-Description=Space Machines Service
-#After=multi-user.target
+Description=Sector67 Access Control
+After=multi-user.target
 
 [Service]
-Type=idle
-ExecStart=/home/pi/run-space-machines.sh
-User=root
+ExecStart=#STARTPATH#
 
 [Install]
 WantedBy=multi-user.target

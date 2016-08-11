@@ -10,13 +10,13 @@ else
 fi
 git checkout alt-pseudo-master
 DIR=$(pwd)
-STARTNAME=s_m_start.sh
+STARTNAME=run-space-machines.sh
 LOGNAME=s_m_logging.conf
 PYTHON=$(which python)
 os='Linux raspberrypi'
 MAIN=$DIR/space_machines/main.py
 kernalinfo=$(uname -a)
-chmod u+x $DIR/bin/$STARTNAME
+chmod u+x $DIR/support/$STARTNAME
 if [[ "$kernalinfo" =~ "$os" ]]; then
 	echo "OS is $os, performing additional setup."
 	isRPi=true
@@ -24,7 +24,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	cp $DIR/space_machines/*.conf /etc #copy config files to /etc
 	CONF=/etc/$CONFNAME
 	LOG=/etc/$LOGNAME
-	cp $DIR/bin/$STARTNAME /usr/local/bin
+	cp $DIR/support/$STARTNAME /usr/local/bin
 	START=/usr/local/bin/$STARTNAME
 	cp $DIR/bin/space_machines.service /lib/systemd/system/space_machines.service
 	SERVICE=/lib/systemd/system/space_machines.service
@@ -45,7 +45,7 @@ else
 	isRPi=false
 	CONFNAME=machine.conf
 	LOG=$DIR/space_machines/$LOGNAME
-	START=$DIR/bin/$STARTNAME
+	START=$DIR/support/$STARTNAME
 	CONF=$DIR/space_machines/$CONFNAME
 fi
 cd $DIR
