@@ -45,9 +45,6 @@ else
 	isRPi=false
 	CONFNAME=machine.conf
 	LOG=$DIR/space_machines/$LOGNAME
-	cp $DIR/support/$STARTNAME $DIR/..
-	START=$DIR/../$STARTNAME
-	sed -i.backup "s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file #+ s|#FILEPATH#|$MAIN|; s|#PYTHONPATH#|$PYTHON|; 
 	CONF=$DIR/space_machines/$CONFNAME
 fi
 cd $DIR
@@ -58,5 +55,5 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	systemctl stop space_machines.service
 	systemctl start space_machines.service
 else
-	$START
+	python -m space_machines.main $CONF $LOG
 fi
