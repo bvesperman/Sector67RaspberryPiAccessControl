@@ -45,7 +45,9 @@ else
 	isRPi=false
 	CONFNAME=machine.conf
 	LOG=$DIR/space_machines/$LOGNAME
-	START=$DIR/support/$STARTNAME
+	cp $DIR/support/$STARTNAME $DIR/..
+	START=$DIR/../$STARTNAME
+	sed -i.backup "s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file #+ s|#FILEPATH#|$MAIN|; s|#PYTHONPATH#|$PYTHON|; 
 	CONF=$DIR/space_machines/$CONFNAME
 fi
 cd $DIR
