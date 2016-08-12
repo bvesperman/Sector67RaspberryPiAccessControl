@@ -86,7 +86,7 @@ for section in config.sections():
     logger.info("initializing " + section)
     classname = config.get(section, 'classname')
     module_name = config.get(section, 'module')
-    module = getattr(space_machines, module_name)
+    module = map(__import__, ['space_machines.'+ str(module_name)])
     logger.info("  machine class: " + classname)
     logger.info("  machine module: " + module_name)
     setup_params = {}
@@ -96,7 +96,7 @@ for section in config.sections():
       # initialization of the reader.
       if key not in ['classname','module']:
           setup_params[key] = val
-    constructor = getattr(module, classname)
+    constructor = getattr(module[0], classname)
     machine = constructor()
     # set the same output queue for each machine so that they can coordinate
     machine.setup(out_queue=out_queue, **setup_params)
