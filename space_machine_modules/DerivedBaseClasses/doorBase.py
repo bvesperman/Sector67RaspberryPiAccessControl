@@ -192,7 +192,11 @@ class doorBase(StateMachine):
     # Wait for events
     while True:
       ev = yield
-    
+
+      if self.duration() > 1./1000 * 5000:
+        self.ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_CLOSED_GRANTING_TIMEOUT()
+        self.transition(self.CLOSED_LOCKED)
+      
       if ev['event'] == "MAIN_DOOR_CLOSED_GRANTING_TIMEOUT":
         self.ON_CLOSED_GRANTING_UNLOCKED_MAIN_DOOR_CLOSED_GRANTING_TIMEOUT()
         self.transition(self.CLOSED_UNLOCKED)
