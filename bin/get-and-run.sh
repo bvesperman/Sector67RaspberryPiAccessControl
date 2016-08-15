@@ -42,8 +42,8 @@ else
 	echo "OS is not $OS, no additional setup performed."
 	isRPi=false
 	CONFNAME=machine.conf
-	LOG=$DIR/space_machines/$LOGNAME
-	CONF=$DIR/space_machines/$CONFNAME
+	LOG=$DIR/support/$LOGNAME
+	CONF=$DIR/support/$CONFNAME
 fi
 cd $DIR
 python -m pip uninstall $DIR
