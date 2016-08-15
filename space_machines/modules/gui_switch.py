@@ -14,8 +14,9 @@ class GuiSwitch(StateMachine):
     self.logger.debug("generating message: " + self.on_message)
     self.generate_message({"event": self.on_message})
     while True:
+      self.WHILE_ON()
       ev = yield
-      if self.shouldBeOn() == False:
+      if ev['event'] == self.name + '_TURN_OFF':
         self.transition(self.OFF)
 
   def OFF(self):
@@ -23,12 +24,18 @@ class GuiSwitch(StateMachine):
     self.logger.debug("generating message: " + self.off_message)
     self.generate_message({"event": self.off_message})
     while True:
+      self.WHILE_OFF()
       ev = yield
-      if self.shouldBeOn() == True:
+      if ev['event'] == self.name + '_TURN_ON':
         self.transition(self.ON)
 
-  def shouldBeOn(self):
-    return self.state.get() or 0
+  def WHILE_OFF(self):
+    if self.state.get():
+      self.generate_message({"event": self.name + '_TURN_ON'})
+
+  def WHILE_ON(self):
+    if not self.state.get():
+      self.generate_message({"event": self.name + '_TURN_OFF'})
 
   def setup(self, out_queue, name, on_message, off_message, selected=False, checkbutton_text="ON/OFF"):
     self.logger = logging.getLogger("GuiSwitch")

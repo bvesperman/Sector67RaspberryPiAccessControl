@@ -17,9 +17,9 @@ if sys.platform=='linux2':
       self.logger.debug("generating message: " + self.on_message)
       self.generate_message({"event": self.on_message})
       while True:
+        self.WHILE_ON()
         ev = yield
-        state = GPIO.input(self.gpio_pin)
-        if state == False:
+        if ev['event'] == self.name + '_TURN_OFF':
           self.transition(self.OFF)
 
     def OFF(self):
@@ -27,10 +27,18 @@ if sys.platform=='linux2':
       self.logger.debug("generating message: " + self.off_message)
       self.generate_message({"event": self.off_message})
       while True:
+        self.WHILE_OFF()
         ev = yield
-        state = GPIO.input(self.gpio_pin)
-        if state == True:
+        if ev['event'] == self.name + '_TURN_ON':
           self.transition(self.ON)
+
+    def WHILE_OFF(self):
+      if GPIO.input(self.gpio_pin):
+        self.generate_message({"event": self.name + '_TURN_ON'})
+
+    def WHILE_ON(self):
+      if not GPIO.input(self.gpio_pin):
+        self.generate_message({"event": self.name + '_TURN_OFF'})
 
     def setup(self, out_queue, name, gpio_pin, on_message, off_message):
       self.logger = logging.getLogger("RpiGpioSwitch")
