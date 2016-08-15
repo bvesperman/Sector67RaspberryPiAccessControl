@@ -7,8 +7,8 @@ from Tkinter import *
 from pystates import StateMachine
 if sys.platform=='linux2':
   from neopixel import *
-from MockStrip import MockStrip
-from blinkenlights_quickchange  import QuickChange
+from _mockstip import MockStrip
+from _blinkenlights_quickchange  import QuickChange
 
 
 class BlinkenLights(StateMachine):

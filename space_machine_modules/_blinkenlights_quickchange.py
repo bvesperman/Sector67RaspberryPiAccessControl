@@ -1,6 +1,6 @@
 import time
 import random
-from blinkenlights_layer import Layer
+from _blinkenlights_layer import Layer
 
 
 class QuickChange:

@@ -4,7 +4,7 @@ import Queue
 
 from Tkinter import *
 from pystates import StateMachine
-from tts import TextToSpeech
+from _tts import TextToSpeech
 
 
 class Greeter(StateMachine):

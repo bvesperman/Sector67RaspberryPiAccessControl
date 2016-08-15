@@ -12,7 +12,7 @@ setup(
     author='Brian Vesperman',
     author_email='bvesperman@gmail.com',
     url='https://github.com/bvesperman/Sector67RaspberryPiAccessControl',
-    packages=['space_machines'],
+    packages=['space_machines','space_machine_modules','pystates'],
     license='MIT',
     description='Controlling or interfacing with simple machines from a Raspberry Pi.',
     long_description=open('README.md').read(),
