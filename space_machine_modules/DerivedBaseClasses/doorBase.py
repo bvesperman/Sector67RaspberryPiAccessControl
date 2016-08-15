@@ -35,8 +35,8 @@ class doorBase(StateMachine):
         self.ON_CLOSED_LOCKED_INVALID_KEY()
         self.transition(self.INVALID_KEY)
       
-      if ev['event'] == "MAIN_DOOR_MODE_UNLOCKED":
-        self.ON_CLOSED_LOCKED_MAIN_DOOR_MODE_UNLOCKED()
+      if ev['event'] == "MAIN_DOOR_UNLOCKED":
+        self.ON_CLOSED_LOCKED_MAIN_DOOR_UNLOCKED()
         self.transition(self.CLOSED_UNLOCKED)
       
       if ev['event'] == "VALID_KEY":
@@ -66,8 +66,8 @@ class doorBase(StateMachine):
         self.ON_CLOSED_UNLOCKED_MAIN_DOOR_SENSOR_OPENED()
         self.transition(self.OPEN_UNLOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_LOCKED":
-        self.ON_CLOSED_UNLOCKED_MAIN_DOOR_MODE_LOCKED()
+      if ev['event'] == "MAIN_DOOR_LOCKED":
+        self.ON_CLOSED_UNLOCKED_MAIN_DOOR_LOCKED()
         self.transition(self.CLOSED_LOCKED)
       
       if ev['event'] == "VALID_KEY":
@@ -97,8 +97,8 @@ class doorBase(StateMachine):
         self.ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_SENSOR_OPENED()
         self.transition(self.OPEN_GRANTING_LOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_UNLOCKED":
-        self.ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_MODE_UNLOCKED()
+      if ev['event'] == "MAIN_DOOR_UNLOCKED":
+        self.ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_UNLOCKED()
         self.transition(self.CLOSED_GRANTING_UNLOCKED)
       
   def OPEN_GRANTING_LOCKED(self):
@@ -116,8 +116,8 @@ class doorBase(StateMachine):
         self.ON_OPEN_GRANTING_LOCKED_MAIN_DOOR_OPEN_GRANTING_TIMEOUT()
         self.transition(self.OPEN_LOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_UNLOCKED":
-        self.ON_OPEN_GRANTING_LOCKED_MAIN_DOOR_MODE_UNLOCKED()
+      if ev['event'] == "MAIN_DOOR_UNLOCKED":
+        self.ON_OPEN_GRANTING_LOCKED_MAIN_DOOR_UNLOCKED()
         self.transition(self.OPEN_UNLOCKED)
       
       if ev['event'] == "MAIN_DOOR_OPEN_GRANTING_TIMEOUT":
@@ -147,8 +147,8 @@ class doorBase(StateMachine):
         self.ON_OPEN_LOCKED_MAIN_DOOR_STUCK_TIMEOUT()
         self.transition(self.STUCK_OPEN_LOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_UNLOCKED":
-        self.ON_OPEN_LOCKED_MAIN_DOOR_MODE_UNLOCKED()
+      if ev['event'] == "MAIN_DOOR_UNLOCKED":
+        self.ON_OPEN_LOCKED_MAIN_DOOR_UNLOCKED()
         self.transition(self.OPEN_UNLOCKED)
       
       if ev['event'] == "MAIN_DOOR_SENSOR_CLOSED":
@@ -170,8 +170,8 @@ class doorBase(StateMachine):
         self.ON_OPEN_UNLOCKED_MAIN_DOOR_STUCK_TIMEOUT()
         self.transition(self.STUCK_OPEN_UNLOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_LOCKED":
-        self.ON_OPEN_UNLOCKED_MAIN_DOOR_MODE_LOCKED()
+      if ev['event'] == "MAIN_DOOR_LOCKED":
+        self.ON_OPEN_UNLOCKED_MAIN_DOOR_LOCKED()
         self.transition(self.OPEN_LOCKED)
       
       if ev['event'] == "MAIN_DOOR_STUCK_TIMEOUT":
@@ -201,8 +201,8 @@ class doorBase(StateMachine):
         self.ON_CLOSED_GRANTING_UNLOCKED_MAIN_DOOR_CLOSED_GRANTING_TIMEOUT()
         self.transition(self.CLOSED_UNLOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_LOCKED":
-        self.ON_CLOSED_GRANTING_UNLOCKED_MAIN_DOOR_MODE_LOCKED()
+      if ev['event'] == "MAIN_DOOR_LOCKED":
+        self.ON_CLOSED_GRANTING_UNLOCKED_MAIN_DOOR_LOCKED()
         self.transition(self.CLOSED_GRANTING_LOCKED)
       
       if ev['event'] == "MAIN_DOOR_SENSOR_OPENED":
@@ -220,8 +220,8 @@ class doorBase(StateMachine):
     while True:
       ev = yield
     
-      if ev['event'] == "MAIN_DOOR_MODE_UNLOCKED":
-        self.ON_STUCK_OPEN_LOCKED_MAIN_DOOR_MODE_UNLOCKED()
+      if ev['event'] == "MAIN_DOOR_UNLOCKED":
+        self.ON_STUCK_OPEN_LOCKED_MAIN_DOOR_UNLOCKED()
         self.transition(self.STUCK_OPEN_UNLOCKED)
       
       if ev['event'] == "MAIN_DOOR_SENSOR_CLOSED":
@@ -243,8 +243,8 @@ class doorBase(StateMachine):
         self.ON_STUCK_OPEN_UNLOCKED_MAIN_DOOR_SENSOR_CLOSED()
         self.transition(self.CLOSED_UNLOCKED)
       
-      if ev['event'] == "MAIN_DOOR_MODE_LOCKED":
-        self.ON_STUCK_OPEN_UNLOCKED_MAIN_DOOR_MODE_LOCKED()
+      if ev['event'] == "MAIN_DOOR_LOCKED":
+        self.ON_STUCK_OPEN_UNLOCKED_MAIN_DOOR_LOCKED()
         self.transition(self.STUCK_OPEN_LOCKED)
       
   def INVALID_KEY(self):
@@ -279,8 +279,8 @@ class doorBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_CLOSED_LOCKED_MAIN_DOOR_MODE_UNLOCKED(self):
-    """ While in CLOSED_LOCKED, a MAIN_DOOR_MODE_UNLOCKED message is recieved. """
+  def ON_CLOSED_LOCKED_MAIN_DOOR_UNLOCKED(self):
+    """ While in CLOSED_LOCKED, a MAIN_DOOR_UNLOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -311,8 +311,8 @@ class doorBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_CLOSED_UNLOCKED_MAIN_DOOR_MODE_LOCKED(self):
-    """ While in CLOSED_UNLOCKED, a MAIN_DOOR_MODE_LOCKED message is recieved. """
+  def ON_CLOSED_UNLOCKED_MAIN_DOOR_LOCKED(self):
+    """ While in CLOSED_UNLOCKED, a MAIN_DOOR_LOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -338,8 +338,8 @@ class doorBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_MODE_UNLOCKED(self):
-    """ While in CLOSED_GRANTING_LOCKED, a MAIN_DOOR_MODE_UNLOCKED message is recieved. """
+  def ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_UNLOCKED(self):
+    """ While in CLOSED_GRANTING_LOCKED, a MAIN_DOOR_UNLOCKED message is recieved. """
     pass
       
   
@@ -350,8 +350,8 @@ class doorBase(StateMachine):
 
    
   # By default - do nothing during transitions
-  def ON_OPEN_GRANTING_LOCKED_MAIN_DOOR_MODE_UNLOCKED(self):
-    """ While in OPEN_GRANTING_LOCKED, a MAIN_DOOR_MODE_UNLOCKED message is recieved. """
+  def ON_OPEN_GRANTING_LOCKED_MAIN_DOOR_UNLOCKED(self):
+    """ While in OPEN_GRANTING_LOCKED, a MAIN_DOOR_UNLOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -377,8 +377,8 @@ class doorBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_OPEN_LOCKED_MAIN_DOOR_MODE_UNLOCKED(self):
-    """ While in OPEN_LOCKED, a MAIN_DOOR_MODE_UNLOCKED message is recieved. """
+  def ON_OPEN_LOCKED_MAIN_DOOR_UNLOCKED(self):
+    """ While in OPEN_LOCKED, a MAIN_DOOR_UNLOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -394,8 +394,8 @@ class doorBase(StateMachine):
 
    
   # By default - do nothing during transitions
-  def ON_OPEN_UNLOCKED_MAIN_DOOR_MODE_LOCKED(self):
-    """ While in OPEN_UNLOCKED, a MAIN_DOOR_MODE_LOCKED message is recieved. """
+  def ON_OPEN_UNLOCKED_MAIN_DOOR_LOCKED(self):
+    """ While in OPEN_UNLOCKED, a MAIN_DOOR_LOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -421,8 +421,8 @@ class doorBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_CLOSED_GRANTING_UNLOCKED_MAIN_DOOR_MODE_LOCKED(self):
-    """ While in CLOSED_GRANTING_UNLOCKED, a MAIN_DOOR_MODE_LOCKED message is recieved. """
+  def ON_CLOSED_GRANTING_UNLOCKED_MAIN_DOOR_LOCKED(self):
+    """ While in CLOSED_GRANTING_UNLOCKED, a MAIN_DOOR_LOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -438,8 +438,8 @@ class doorBase(StateMachine):
 
    
   # By default - do nothing during transitions
-  def ON_STUCK_OPEN_LOCKED_MAIN_DOOR_MODE_UNLOCKED(self):
-    """ While in STUCK_OPEN_LOCKED, a MAIN_DOOR_MODE_UNLOCKED message is recieved. """
+  def ON_STUCK_OPEN_LOCKED_MAIN_DOOR_UNLOCKED(self):
+    """ While in STUCK_OPEN_LOCKED, a MAIN_DOOR_UNLOCKED message is recieved. """
     pass
       
   # By default - do nothing during transitions
@@ -460,8 +460,8 @@ class doorBase(StateMachine):
     pass
       
   # By default - do nothing during transitions
-  def ON_STUCK_OPEN_UNLOCKED_MAIN_DOOR_MODE_LOCKED(self):
-    """ While in STUCK_OPEN_UNLOCKED, a MAIN_DOOR_MODE_LOCKED message is recieved. """
+  def ON_STUCK_OPEN_UNLOCKED_MAIN_DOOR_LOCKED(self):
+    """ While in STUCK_OPEN_UNLOCKED, a MAIN_DOOR_LOCKED message is recieved. """
     pass
       
   
