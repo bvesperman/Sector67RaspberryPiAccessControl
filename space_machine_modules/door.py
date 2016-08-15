@@ -47,7 +47,7 @@ class DoorState(doorBase):
   # By Default - do nothing ON_CLOSED_LOCKED
   def ON_CLOSED_LOCKED(self):
     """  """
-    pass
+    self.generate_message({"event": self.name + "_LOCK"})
 
    
   # By default - do nothing during transitions
@@ -74,7 +74,7 @@ class DoorState(doorBase):
   # By Default - do nothing ON_CLOSED_UNLOCKED
   def ON_CLOSED_UNLOCKED(self):
     """  """
-    pass
+    self.generate_message({"event": self.name + "_UNLOCK"})
 
    
   # By default - do nothing during transitions
@@ -101,13 +101,13 @@ class DoorState(doorBase):
   # By Default - do nothing ON_CLOSED_GRANTING_LOCKED
   def ON_CLOSED_GRANTING_LOCKED(self):
     """  """
-    pass
+    self.generate_message({"event": self.name + "_UNLOCK"})
 
    
   # By default - do nothing during transitions
   def ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_CLOSED_GRANTING_TIMEOUT(self):
     """ While in CLOSED_GRANTING_LOCKED, a MAIN_DOOR_CLOSED_GRANTING_TIMEOUT message is recieved. """
-    pass
+    self.generate_message({"event": self.name + "_LOCK"})
       
   # By default - do nothing during transitions
   def ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_SENSOR_OPENED(self):
