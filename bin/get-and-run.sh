@@ -3,8 +3,6 @@ cd ..
 if [ -e '.git' ]
 	then git pull
 else
-	rm -rf $(pwd)
-	cd ..
 	git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 	cd Sector67RaspberryPiAccessControl
 fi
@@ -13,12 +11,12 @@ DIR=$(pwd)
 STARTNAME=run-space-machines.sh
 LOGNAME=s_m_logging.conf
 #PYTHON=$(which python)
-os='Linux raspberrypi'
+OS='Linux raspberrypi'
 #MAIN=$DIR/space_machines/main.py
 kernalinfo=$(uname -a)
 chmod u+x $DIR/support/$STARTNAME
-if [[ "$kernalinfo" =~ "$os" ]]; then
-	echo "OS is $os, performing additional setup."
+if [[ "$kernalinfo" =~ "$OS" ]]; then
+	echo "OS is $OS, performing additional setup."
 	isRPi=true
 	CONFNAME=rpi-machine.conf
 	cp $DIR/space_machines/*.conf /etc #copy config files to /etc
@@ -41,7 +39,7 @@ if [[ "$kernalinfo" =~ "$os" ]]; then
 	systemctl set-default multi-user.target #start in virtual terminal with autologin
 	ln -fs /etc/systemd/system/autologin@.service /etc/systemd/system/getty.target.wants/getty@tty1.service 
 else
-	echo "OS is not $os, no additional setup performed."
+	echo "OS is not $OS, no additional setup performed."
 	isRPi=false
 	CONFNAME=machine.conf
 	LOG=$DIR/space_machines/$LOGNAME
@@ -51,7 +49,7 @@ cd $DIR
 python -m pip uninstall $DIR
 python -m pip install $DIR
 
-if [[ "$kernalinfo" =~ "$os" ]]; then
+if $isRPi; then
 	systemctl stop space_machines.service
 	systemctl start space_machines.service
 else
