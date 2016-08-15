@@ -9,7 +9,7 @@ fi
 git checkout Generation-Integration
 DIR=$(pwd)
 STARTNAME=run-space-machines.sh
-LOGNAME=s_m_logging.conf
+LOGNAME=space_machines_logging.conf
 #PYTHON=$(which python)
 OS='Linux raspberrypi'
 #MAIN=$DIR/space_machines/main.py
@@ -19,7 +19,7 @@ if [[ "$kernalinfo" =~ "$OS" ]]; then
 	echo "OS is $OS, performing additional setup."
 	isRPi=true
 	CONFNAME=rpi-machine.conf
-	cp $DIR/space_machines/*.conf /etc #copy config files to /etc
+	cp $DIR/support/*.conf /etc #copy config files to /etc
 	CONF=/etc/$CONFNAME
 	LOG=/etc/$LOGNAME
 	cp $DIR/support/$STARTNAME /usr/local/bin
