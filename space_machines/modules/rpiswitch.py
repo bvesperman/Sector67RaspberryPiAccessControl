@@ -14,22 +14,22 @@ if sys.platform=='linux2':
 
     def ON(self):
       self.logger.debug(self.name + " switch is on ")
+      self.logger.debug("generating message: " + self.on_message)
+      self.generate_message({"event": self.on_message})
       while True:
         ev = yield
         state = GPIO.input(self.gpio_pin)
         if state == False:
-          self.logger.debug("generating message: " + self.off_message)
-          self.generate_message({"event": self.off_message})
           self.transition(self.OFF)
 
     def OFF(self):
       self.logger.debug(self.name + " switch is off")
+      self.logger.debug("generating message: " + self.off_message)
+      self.generate_message({"event": self.off_message})
       while True:
         ev = yield
         state = GPIO.input(self.gpio_pin)
         if state == True:
-          self.logger.debug("generating message: " + self.on_message)
-          self.generate_message({"event": self.on_message})
           self.transition(self.ON)
 
     def setup(self, out_queue, name, gpio_pin, on_message, off_message):

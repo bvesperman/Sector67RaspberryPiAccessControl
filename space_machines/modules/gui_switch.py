@@ -11,20 +11,20 @@ class GuiSwitch(StateMachine):
 
   def ON(self):
     self.logger.debug(self.name + " switch is on ")
+    self.logger.debug("generating message: " + self.on_message)
+    self.generate_message({"event": self.on_message})
     while True:
       ev = yield
       if self.shouldBeOn() == False:
-        self.logger.debug("generating message: " + self.off_message)
-        self.generate_message({"event": self.off_message})
         self.transition(self.OFF)
 
   def OFF(self):
     self.logger.debug(self.name + " switch is off")
+    self.logger.debug("generating message: " + self.off_message)
+    self.generate_message({"event": self.off_message})
     while True:
       ev = yield
       if self.shouldBeOn() == True:
-        self.logger.debug("generating message: " + self.on_message)
-        self.generate_message({"event": self.on_message})
         self.transition(self.ON)
 
   def shouldBeOn(self):
