@@ -4,7 +4,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-exec(open('space_machines/version.py').read())
+exec(open('version.py').read())
 
 setup(
     name='space_machines',
