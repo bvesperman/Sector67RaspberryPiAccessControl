@@ -1,6 +1,6 @@
 from DerivedBaseClasses.doorBase import *
-from _mockstrip import MockStrip
-from _blinkenlights_quickchange  import QuickChange
+from frameworks.blinkenlights.mockstrip import MockStrip
+from frameworks.blinkenlights.quickchange  import QuickChange
 if sys.platform=='linux2':
   from neopixel import *
 
