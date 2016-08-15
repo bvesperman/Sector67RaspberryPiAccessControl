@@ -87,7 +87,6 @@ for section in config.sections():
     classname = config.get(section, 'classname')
     module_name = config.get(section, 'module')
     module = map(importlib.import_module, ['space_machine_modules.'+ str(module_name)])
-    print(module)
     logger.info("  machine class: " + classname)
     logger.info("  machine module: " + module_name)
     setup_params = {}
