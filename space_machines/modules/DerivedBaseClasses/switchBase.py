@@ -52,15 +52,8 @@ class SwitchBase(StateMachine): #MOCK UP --- NOT ACTUALLY DERIVED
     self.on_message = on_message
     self.off_message = off_message
 
-  def start(self):
-    #TODO: actually detect the starting state here
-    self.logger.debug("initial state: " + self.off_message)
-    self.generate_message({"event": self.off_message})
-    super(Switch, self).start(self.OFF)
-
-    def config_gui(self, root):
+  def config_gui(self, root):
     self.show_gui = True
-    # Set up the GUI part
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
     self.v = StringVar()

@@ -32,9 +32,13 @@ class GuiSwitch(SwitchBase):
   def config_gui(self, root):
     self.show_gui = True
     # Set up the GUI part
-    self.state = IntVar()
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
+    self.v = StringVar()
+    self.v.set("UNKNOWN")
+    w = Label(frame, textvariable=self.v)
+    w.pack(side=LEFT)
+    self.state = IntVar()
     c = Checkbutton(frame, text=self.checkbutton_text, variable=self.state)
     if self.selected:
       c.select()
