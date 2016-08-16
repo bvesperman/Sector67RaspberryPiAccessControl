@@ -48,6 +48,7 @@ class BlinkenLights(DoorBase):
     self.thread.setDaemon(True)
     self.thread.start()
     self.log.debug("thread started")
+    time.sleep(.1) #was having  occasional issue with qc not fully initiated when it tries to call ON_CLOSED_LOCKED
     super(BlinkenLights, self).start(self.CLOSED_LOCKED)
 
   def config_gui(self, root):
