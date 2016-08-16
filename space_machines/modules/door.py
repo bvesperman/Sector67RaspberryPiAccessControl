@@ -96,7 +96,7 @@ class DoorState(DoorBase):
   # By default - do nothing during transitions
   def ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_CLOSED_GRANTING_TIMEOUT(self):
     """ While in CLOSED_GRANTING_LOCKED, a MAIN_DOOR_CLOSED_GRANTING_TIMEOUT message is recieved. """
-    self.generate_message({"event": self.name + "_LOCK"})
+    pass
       
   # By default - do nothing during transitions
   def ON_CLOSED_GRANTING_LOCKED_MAIN_DOOR_SENSOR_OPENED(self):
