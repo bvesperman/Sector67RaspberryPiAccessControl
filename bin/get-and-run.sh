@@ -6,13 +6,11 @@ else
 	git clone https://github.com/bvesperman/Sector67RaspberryPiAccessControl.git
 	cd Sector67RaspberryPiAccessControl
 fi
-git checkout Generation-Integration
+#git checkout Generation-Integration
 DIR=$(pwd)
 STARTNAME=run-space-machines.sh
 LOGNAME=space_machines_logging.conf
-#PYTHON=$(which python)
 OS='Linux raspberrypi'
-#MAIN=$DIR/space_machines/main.py
 kernalinfo=$(uname -a)
 chmod u+x $DIR/support/$STARTNAME
 if [[ "$kernalinfo" =~ "$OS" ]]; then
@@ -27,8 +25,8 @@ if [[ "$kernalinfo" =~ "$OS" ]]; then
 	cp $DIR/support/space_machines.service /lib/systemd/system/space_machines.service
 	SERVICE=/lib/systemd/system/space_machines.service
 	apt-get install python-dev python-pip python-tk python-serial #vlc
-	sed -i.backup 's|.*BLANK_TIME=.*|#BLANK_TIME=0|; s|.*BLANK_DPMS=.*|#BLANK_DPMS=off|; s|.*POWERDOWN_TIME=.*|#POWERDOWN_TIME=0|' /etc/kbd/config #disable screensaver/ screen blanking
-	sed -i.backup "s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file #+ s|#FILEPATH#|$MAIN|; s|#PYTHONPATH#|$PYTHON|; 
+	sed -i.backup 's|.*BLANK_TIME=.*|#BLANK_TIME=0|; s|.*BLANK_DPMS=.*|#BLANK_DPMS=off|' /etc/kbd/config #disable screensaver/ screen blanking (currently bugged, OS side)
+	sed -i.backup "s|#CONFPATH#|$CONF|; s|#LOGPATH#|$LOG|" $START # enters the file path into the start up file
 	sed -i.backup "s|#STARTPATH#|$START|" $SERVICE # enters the start up file path into the service file
 	chmod 644 $SERVICE
 	systemctl daemon-reload
