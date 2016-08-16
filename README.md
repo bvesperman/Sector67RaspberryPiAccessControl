@@ -21,16 +21,11 @@ TODO: provide an example
 # Installation and setup
 Since this project is designed for use on a Raspberry Pi, Pi-specific setup instructions are included here.  You will generally want to start with a modern Raspbian build, currently Jessie.  On top of that, you will want to:
 
-TODO, finish documentation: 
-## change the host name
+## Change the host name
+This can be done by editing /etc/hostname. A Reboot will be necessary.
 
-
-## install the dependencies
-To install the dependencies, you can run:
-
-    [location of the directory]/Sector67RaspberryPiAccessControl/bin/get-and-run.sh
-
-this will install the necessary native libraries and python modules.  Code using the neopixel library must be run as root.
+## Install the project and dependencies
+To install Space machines and its dependencies, you can download and run as root **install.sh**, which can be found in the 'bin' folder.  This will install the necessary native libraries and python modules.  If installing on a Raspberry Pi, it will do Pi-specific settup; otherwise it will do a more basic installation.
 
 # Running unit tests
 To execute the unit tests, run the following from the root of the repository:

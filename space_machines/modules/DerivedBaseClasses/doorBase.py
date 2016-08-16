@@ -20,6 +20,7 @@ class DoorBase(StateMachine):
     self.log = logging.getLogger("doorState")
     self.out_queue = out_queue
     self.name = name
+
   def CLOSED_LOCKED(self):
     """  """
     self.generate_message({"event": self.name + "_CLOSED_LOCKED"})
