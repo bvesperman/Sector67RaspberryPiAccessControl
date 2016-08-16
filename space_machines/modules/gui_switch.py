@@ -1,33 +1,6 @@
-import logging
-import time
-import Queue
-import threading
+from DerivedBaseClasses.switchBase import *
 
-from Tkinter import *
-
-from pystates import StateMachine
-
-class GuiSwitch(StateMachine):
-
-  def ON(self):
-    self.logger.debug(self.name + " switch is on ")
-    self.logger.debug("generating message: " + self.on_message)
-    self.generate_message({"event": self.on_message})
-    while True:
-      self.WHILE_ON()
-      ev = yield
-      if ev['event'] == self.name + '_TURN_OFF':
-        self.transition(self.OFF)
-
-  def OFF(self):
-    self.logger.debug(self.name + " switch is off")
-    self.logger.debug("generating message: " + self.off_message)
-    self.generate_message({"event": self.off_message})
-    while True:
-      self.WHILE_OFF()
-      ev = yield
-      if ev['event'] == self.name + '_TURN_ON':
-        self.transition(self.ON)
+class GuiSwitch(SwitchBase):
 
   def WHILE_OFF(self):
     if self.state.get():

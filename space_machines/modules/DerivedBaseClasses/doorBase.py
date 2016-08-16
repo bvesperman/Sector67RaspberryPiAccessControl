@@ -9,7 +9,7 @@ from pystates import StateMachine
 
 from abc import ABCMeta, abstractmethod
 
-class doorBase(StateMachine):
+class DoorBase(StateMachine):
   __metaclass__ = ABCMeta
   """description of class"""
   

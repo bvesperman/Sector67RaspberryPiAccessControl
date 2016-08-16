@@ -1,17 +1,6 @@
-import logging
-import time
-import Queue
-import threading
-
-from Tkinter import *
-
-from pystates import StateMachine
-
-from abc import ABCMeta, abstractmethod
-
 from DerivedBaseClasses.doorBase import *
 
-class DoorState(doorBase):
+class DoorState(DoorBase):
   __metaclass__ = ABCMeta
   """description of class"""
   

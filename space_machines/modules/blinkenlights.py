@@ -4,7 +4,7 @@ from frameworks.quickchange  import QuickChange
 if sys.platform=='linux2':
   from neopixel import *
 
-class BlinkenLights(doorBase):
+class BlinkenLights(DoorBase):
   __metaclass__ = ABCMeta
   """description of class"""
   
