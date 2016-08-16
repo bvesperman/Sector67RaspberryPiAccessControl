@@ -81,3 +81,5 @@ target/
 *.10
 
 *.mp3
+
+start.sh
