@@ -42,21 +42,25 @@ else
 	CONFNAME=machine.conf
 	LOG=$DIR/support/$LOGNAME
 	CONF=$DIR/support/$CONFNAME
-	#touch start.sh
-	#echo "#!/bin/bash" > start.sh
-	#echo "python -m space_machines.main $CONF $LOG" >> start.sh
-	#chmod u+x $DIR/start.sh
+	touch start.sh
+	echo "#!/bin/bash" > start.sh
+	echo "python -m space_machines.main $CONF $LOG" >> start.sh
+	chmod u+x $DIR/start.sh
 
 fi
 cd $DIR
-python -m pip uninstall $DIR
+python -m pip uninstall space_machines
 python -m pip install $DIR
 
 if $isRPi; then
 	systemctl stop space_machines.service
 	systemctl start space_machines.service
 else
-	#echo "Use 'start.sh' to run with installed version."
-	#echo "Reinstall with 'Sector67RaspberryPiAccessControl/bin/install.sh'."
 	python -m space_machines.main $CONF $LOG
+	echo "--------------------"
+	echo ""
+	echo "Use 'start.sh' to run with installed version."
+	echo ""
+	echo "Reinstall with 'Sector67RaspberryPiAccessControl/bin/install.sh'."
+	echo ""
 fi
