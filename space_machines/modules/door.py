@@ -63,7 +63,7 @@ class DoorState(DoorBase):
   # By Default - do nothing ON_CLOSED_UNLOCKED
   def ON_CLOSED_UNLOCKED(self):
     """  """
-    self.generate_message({"event": self.name + "_POOP"})
+    self.generate_message({"event": self.name + "_UNLOCK"})
 
    
   # By default - do nothing during transitions
