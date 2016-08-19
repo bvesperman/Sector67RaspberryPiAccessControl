@@ -4,7 +4,7 @@ if sys.platform=='linux2':
   import RPi.GPIO as GPIO
 
 
-class RpiGpioOutput(StateMachine):
+class RpiGpioOutput(SwitchBase):
 
   def ON_ON(self):
     GPIO.output(self.gpio_pin, 1)
