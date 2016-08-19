@@ -31,7 +31,7 @@ class RpiGpioOutput(StateMachine):
       self.logger.debug("initial state: " + self.off_message)
       super(RpiGpioOutput, self).start(self.OFF)
 
-    def config_gui(self, root):
+  def config_gui(self, root):
     self.show_gui = True
     frame = LabelFrame(root, text=self.name, padx=5, pady=5)
     frame.pack(fill=X)
