@@ -18,7 +18,7 @@ class DatabaseAuthorizer(StateMachine):
   def get_userdata_by_rfid(self, rfid): 
     message={}
     try:
-      decimal_id = int(rfid, 16)& 0x00FFFFFFFF
+      decimal_id = int(str(rfid), 16)& 0x00FFFFFFFF
       conn = sqlite3.connect(self.db_connection_string)
       command = "Select RFID, uid, user_login From AuthorizedUsers Where RFID = '{0}'".format(decimal_id)
       for row in conn.execute(command):
@@ -39,7 +39,7 @@ class DatabaseAuthorizer(StateMachine):
     allowed = False
     conn = sqlite3.connect(self.db_connection_string)
     self.log.debug("attempting to authorize key: " + rfid)
-    decimal_id = int(rfid, 16)& 0x00FFFFFFFF
+    decimal_id = int(str(rfid), 16)& 0x00FFFFFFFF
     command = "Select RFID From AuthorizedUsers Where RFID = '{0}'".format(decimal_id)
     for row in conn.execute(command):
       allowed = True
