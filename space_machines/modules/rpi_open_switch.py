@@ -21,9 +21,9 @@ class open_switchStateMachine(open_switchBase):
   def start(self):
     state = GPIO.input(self.gpio_pin)
     if (state == True):
-      super(mode_switchStateMachine, self).start(self.CLOSED)
+      super(open_switchStateMachine, self).start(self.CLOSED)
     else:
-      super(mode_switchStateMachine, self).start(self.OPEN)
+      super(open_switchStateMachine, self).start(self.OPEN)
 
   def config_gui(self, root):
     self.show_gui = True
