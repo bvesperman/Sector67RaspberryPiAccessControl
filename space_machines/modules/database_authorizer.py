@@ -38,7 +38,7 @@ class DatabaseAuthorizer(StateMachine):
   def is_rfid_authorized(self, rfid):
     allowed = False
     conn = sqlite3.connect(self.db_connection_string)
-    self.log.debug("attempting to authorize key: " + rfid)
+    self.log.debug("attempting to authorize key: " + str(rfid))
     decimal_id = int(str(rfid), 16)& 0x00FFFFFFFF
     command = "Select RFID From AuthorizedUsers Where RFID = '{0}'".format(decimal_id)
     for row in conn.execute(command):
