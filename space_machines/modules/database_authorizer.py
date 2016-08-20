@@ -86,7 +86,7 @@ class DatabaseAuthorizer(StateMachine):
         id = "UNKNOWN"
         display_name = "UNKNOWN"
         account_balance = "UNKNOWN"
-        self.log.debug('attempting to authorize key [' + key + ']')
+        self.log.debug("attempting to authorize key [{}]".format(key))
         userdata = self.get_userdata_by_rfid(key)
         self.log.debug("the message data is: " + str(userdata))
         if "ID" in userdata:
@@ -95,12 +95,12 @@ class DatabaseAuthorizer(StateMachine):
           user_login = str(userdata["user_login"]) 
         is_authorized = self.is_rfid_authorized(key)
         if is_authorized:
-          self.log.info("key was authorized as user [" + user_login + "]")
+          self.log.info("key was authorized as user [{}]".format(user_login))
           message = {"event": "VALID_KEY", "key": key, "user_login": user_login, "id": id, "display_name": display_name, "account_balance": account_balance}
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)
         else:
-          self.log.info("key [" + key + "] was not authorized as user [" + user_login + "]")
+          self.log.info("key [{0}] was not authorized as user [{1}]".format(key, user_login))
           message = {"event": "INVALID_KEY", "key": key, "user_login": user_login, "id": id, "display_name": display_name, "account_balance": account_balance}
           self.logger.debug("generating message: " + str(message))
           self.generate_message(message)
